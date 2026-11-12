@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Günlük",
   "short_name": "Günlük",
-  "description": "Kişisel notlar ve belgeler",
+  "description": "Kişisel notlar, PDF şablonları ve planlama",
   "lang": "tr",
   "start_url": "./",
   "display": "standalone",
