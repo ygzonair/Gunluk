@@ -68,7 +68,7 @@
 <section id="settings-view" class="hide"><div class="kicker">GÜNLÜK</div><h1>Ayarlar</h1><div class="panel cardpad"><h3>Veriler bu cihazda</h3><p class="sub" style="margin-top:8px">Kişisel notlar tarayıcının yerel depolamasında tutulur. PDF'ler yalnızca sen indirip paylaştığında dışarı çıkar.</p><div class="divider"></div><h3>Belge güvenliği</h3><p class="sub" style="margin-top:8px">Normal PDF'ler parolasızdır. Özel belgelerde şifreli içerik için ayrıca parola gereklidir. Bu uygulama güvenlik denetiminden geçmiş bir ürün değildir.</p><div class="divider"></div><p class="micro">Günlük v1.0 • iPhone / Android</p></div></section>
 <section id="private-view" class="hide">
   <div class="backrow"><button id="leave-private" class="back" aria-label="Günlük'e dön">‹</button><div><div class="kicker">BELGE İŞLEMLERİ</div><h2>Belgelerim</h2></div></div>
-  <div class="seg"><button id="tab-create" class="active" type="button">Yeni PDF</button><button id="tab-open" type="button">PDF Aç</button></div>
+  <div class="seg"><button id="tab-create" class="active" type="button">Yeni PDF</button><button id="tab-open" type="button">PDF Aç</button></div><a href="./chat.html" style="display:block;text-align:center;margin:12px 0 18px;padding:13px;border:1px solid #24a07c;border-radius:9px;color:#144d3d;background:#eaf3ee;text-decoration:none;font-size:14px;font-weight:750">◉ &nbsp; Sohbet — Doğrudan mesajlaşma</a>
   <div id="secret-create" class="secret-block">
     <div class="field"><label for="private-style">Belge şablonu</label><select id="private-style"></select></div>
     <div id="private-fields"></div>
@@ -86,7 +86,7 @@
     <button class="button full" type="submit" id="open-secret">Belgeyi aç</button><div id="decode-status" class="status hide" role="status"></div>
     <div id="reveal" class="hide"><div id="reveal-content" class="reveal"></div><p class="countdown" id="counter">10 saniye</p></div>
   </form></div>
-  <p class="footer">Günlük · Belge İşlemleri · v1.0</p>
+  <p class="footer">Günlük · Belge İşlemleri · v1.1</p>
 </section>
 </main>
 <nav id="navbar" class="nav" aria-label="Alt menü"><button data-go="home" class="active"><b>⌂</b>Özet</button><button data-go="docs"><b>▤</b>Belgeler</button><button data-go="notes"><b>✎</b>Notlar</button><button data-go="settings"><b>⚙</b>Ayarlar</button></nav>
@@ -99,17 +99,17 @@ $('#head-date').textContent=now.toLocaleDateString('tr-TR',{day:'numeric',month:
 $('#hero-date').textContent=today;
 const templates={
  meeting:{title:'Toplantı Tutanağı',short:'Operasyon ve ekip toplantıları',code:'OPS-01',icon:'▤',fields:[
- ['Birim / Departman','Şube Operasyonları'],['Toplantı Tarihi','12.11.2026'],['Katılımcılar','Operasyon ekibi (örnek)'],['Toplantı Konusu','Şube işlem süreçleri ve mutabakat kontrolleri'],['Gündem','1. Gün sonu kasa mutabakatı\n2. EFT / FAST işlem kontrolü\n3. Eksik evrak takibi'],['Alınan Kararlar','Gün sonu mutabakat listesi güncellenecek. Eksik evraklar haftalık takipte değerlendirilecek.'] ]},
+ ['Birim / Departman','Şube Operasyonları'],['Toplantı Tarihi','12.11.2026'],['Katılımcılar','Operasyon ekibi (örnek)'],['Toplantı Konusu','Günlük iş akışı ve işlem kalitesi'],['Gündem','1. Gün sonu kontrolleri\n2. Eksik evrak takibi\n3. Haftalık iş dağılımı'],['Alınan Kararlar','Kontrol listeleri güncellenecek. Eksik dosyalar için haftalık takip yapılacak.'] ]},
  budget:{title:'Aylık Bütçe Özeti',short:'Bütçe, gerçekleşen ve sapma',code:'FIN-02',icon:'▥',fields:[
- ['Dönem','Kasım 2026'],['Birim','Örnek Şube İşletme Bütçesi'],['Planlanan Gider','1.250.000 TL'],['Gerçekleşen Gider','1.170.000 TL'],['Bütçe Farkı','80.000 TL (olumlu)'],['Değerlendirme','Şube işletme giderlerinde gerçekleşme %93,6. Dış hizmet giderleri planın altında kaldı.'] ]},
+ ['Dönem','Kasım 2026'],['Birim','Örnek Operasyon Birimi'],['Planlanan Gider','1.250.000 TL'],['Gerçekleşen Gider','1.170.000 TL'],['Bütçe Farkı','80.000 TL (olumlu)'],['Değerlendirme','Bütçe gerçekleşmesi %93,6. Farkın ana nedeni planlanan dış hizmet giderlerinin ertelenmesi.'] ]},
  expense:{title:'Masraf Bildirim Formu',short:'Kalem bazında masraf takibi',code:'FIN-03',icon:'₺',fields:[
- ['Masraf Dönemi','Kasım 2026'],['Birim / Talep Sahibi','Şube Operasyonları (örnek)'],['Gider Kalemi 1','Şube sarf malzemeleri — 1.250 TL'],['Gider Kalemi 2','Kargo ve kurye — 680 TL'],['Toplam Tutar','1.930 TL'],['Açıklama','Belirtilen tutarlar eğitim ve tasarım amacıyla oluşturulmuş örnek verilerdir.'] ]},
+ ['Masraf Dönemi','Kasım 2026'],['Birim / Talep Sahibi','Operasyon Ekibi (örnek)'],['Gider Kalemi 1','Ofis malzemeleri — 1.250 TL'],['Gider Kalemi 2','Kargo ve kurye — 680 TL'],['Toplam Tutar','1.930 TL'],['Açıklama','Belirtilen tutarlar eğitim ve tasarım amacıyla oluşturulmuş örnek verilerdir.'] ]},
  week:{title:'Haftalık İş Planı',short:'Görev ve öncelik planlaması',code:'OPS-04',icon:'▦',fields:[
- ['Hafta','09–13 Kasım 2026'],['Birim','Şube Destek Ekibi'],['Öncelik 1','Pazartesi: EFT / FAST işlem raporlarının karşılaştırılması'],['Öncelik 2','Çarşamba: Hesap açılış evrak kontrolünün yapılması'],['Öncelik 3','Cuma: Haftalık mutabakat ve operasyon raporu'],['Notlar','Eksik kalan kontroller takip listesine aktarılacak.'] ]},
+ ['Hafta','09–13 Kasım 2026'],['Birim','Şube Destek Ekibi'],['Öncelik 1','Pazartesi: Günlük rapor kontrolü ve kayıtların karşılaştırılması'],['Öncelik 2','Çarşamba: Açık işlerin tamamlanma durumunun izlenmesi'],['Öncelik 3','Cuma: Haftalık çıktı ve kontrol listesinin hazırlanması'],['Notlar','Aksayan süreçler haftalık değerlendirme toplantısına taşınacak.'] ]},
  client:{title:'Görüşme Notu',short:'İletişim ve takip kayıtları',code:'CRM-05',icon:'◫',fields:[
- ['Görüşme Tarihi','12.11.2026'],['Görüşme Türü','Bilgilendirme görüşmesi (örnek)'],['Konu','Dijital bankacılık kullanımına ilişkin bilgilendirme'],['Görüşme Özeti','Mobil bankacılık kullanım adımları ve resmi destek kanalları hakkında genel bilgi verilmiştir.'],['Takip Aksiyonu','Dijital bankacılık bilgilendirme notunun iletilmesi'],['Durum','Bilgilendirme tamamlandı — örnek senaryo'] ]},
+ ['Görüşme Tarihi','12.11.2026'],['Görüşme Türü','Bilgilendirme görüşmesi (örnek)'],['Konu','Dijital kanallara ilişkin genel bilgilendirme'],['Görüşme Özeti','Örnek senaryoda genel ürün özellikleri ve iletişim kanalları hakkında bilgi paylaşılmıştır.'],['Takip Aksiyonu','Güncel bilgilendirme materyalinin paylaşılması'],['Durum','Bilgilendirme tamamlandı — örnek senaryo'] ]},
  checklist:{title:'Operasyon Kontrol Listesi',short:'Gün sonu ve kalite adımları',code:'OPS-06',icon:'☷',fields:[
- ['Kontrol Tarihi','12.11.2026'],['Sorumlu Birim','Operasyon Kontrol'],['Adım 1','☑ Gün sonu kasa mutabakat listesi kontrol edildi'],['Adım 2','☑ Açık EFT / FAST işlem listesi kontrol edildi'],['Adım 3','☐ Evrak arşiv kontrolü tamamlanacak'],['Açıklama','Kontroller örnek iş akışını gösterir; gerçek kontrol kaydı veya onay belgesi değildir.'] ]}
+ ['Kontrol Tarihi','12.11.2026'],['Sorumlu Birim','Operasyon Kontrol'],['Adım 1','☑ Günlük dosya bütünlüğü kontrol edildi'],['Adım 2','☑ Açık işlem listesi gözden geçirildi'],['Adım 3','☐ Arşiv kontrolü tamamlanacak'],['Açıklama','Kontroller örnek iş akışını gösterir; gerçek kontrol kaydı veya onay belgesi değildir.'] ]}
 };
 const templateKeys=Object.keys(templates);
 const views=['home','docs','editor','notes','settings','private'];let currentView='home',currentTemplate='meeting',privateTab='create',taps=[];
