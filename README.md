@@ -1,14 +1,20 @@
-# Günlük v1.6 — Güvenlik, Cihazlar ve Gizli Bildirimler
+# Günlük v1.7 — Arayüz ve Profil Güncellemesi
 
-Yeni işlevler Kişiler > Güvenlik ve gizlilik ayarları bölümünde.
+Güncellenen dosyalar: `index.html`, `kisiler.html`, `sw.js`, `install-diary.html`, `install-calendar.html`, `install-calculator.html`, `install-loan.html`, `install-sudoku.html`.
 
-- Okunmamış mesaj yalnızca dokununca açılır; okunan mesaj sunucudan silindikten sonra en fazla 10 saniye görüntülenir. Konuşmadan çıkınca ekran hemen temizlenir.
-- Face ID / Touch ID (WebAuthn PRF destekleniyorsa): kişisel parolayla etkinleştirilir; özel anahtar biyometrik passkey'den türetilen anahtarla sarılır. Desteklenmiyorsa kişisel parola kullanılır.
-- Otomatik kilit: 15/30/60/120/300 saniye ve uygulama arka plana geçtiğinde anında.
-- Güvenilir cihazlar: listeleme, cihaz erişimini kaldırma.
-- Kurtarma: tek kullanımlık 256 bit kod + kişisel parola; kod kaybedilirse eski kodla yenilenir. Yeni cihazda aynı mesaj kimliğine bağlanır.
-- Gizli Web Push: etkinleştirme ve devre dışı bırakma, bildirime mesaj metni ve gönderen adı konmaz. iPhone Home Screen PWA + izin gerektirir.
+## Değişiklikler
+- Görünüm değiştiğinde başlık, uygulama adı metası ve simge eşleşir. iPhone / Android'de mevcut kurulu uygulamanın sistemdeki adı otomatik değişmeyebilir: doğru simge/isim için yeni kurulum sayfası kullanılmalıdır.
+- Kullanıcı adı ve görünen ad, özel Kişiler sayfasındaki `Hesap bilgileri` bölümünden düzenlenebilir. Şifreleme anahtarı, kişi ID'si ve mevcut mesajlar değiştirilmez.
+- Normal Ayarlar'daki Veriler Bu Cihazda / Belge Güvenliği / sürüm kutusu kaldırıldı. Özel hesabın güvenliği normal Ayarlar'da gösterilmez.
+- Özel bölümde kurtarma ve Face ID durumuna göre küçük, zorlamayan güvenlik uyarısı görünür.
+- Sohbet ekranı sadeleştirildi; önceki 10 saniye / okumada silme / çıkışta sıfırlama davranışı korundu.
+- Ana ekrana ekleme bağlantıları ve cihaz değiştirme uyarısı güncellendi.
 
-Yayınlama: Bu paketteki dosyaları GitHub ygzonair/Gunluk `main` ana dizinine yükleyip Commit changes yap. Önce eski PWA'yı silme.
+## Yayın
+ZIP'i açın ve dosyaları `ygzonair/Gunluk` GitHub deposunun `main` dalının ana dizinine yükleyin. 8 güncel dosyayı mevcut dosyaların yerine koyun. GitHub Pages işlemi tamamlandıktan sonra uygulamayı tamamen kapatıp yeniden açın.
 
-ÖNEMLİ: WebAuthn PRF çalışması gerçek iPhone'da ve Android'de kontrol edilmedi. Bildirimlerin iOS üzerinde uçtan uca teslimi doğrulanmadı. Bu sistem bağımsız güvenlik denetiminden geçmedi. Biyometri iPhone kilit kodunu alternatif kabul edebilir. Görünen metnin silinmesi RAM/ekran görüntüsü/klavye izi/sunucu yedeklerini bütünüyle silmez.
+## Sunucu
+Supabase migrasyonu uygulandı: `gunluk_profiles_owner_edit` RLS politikası, `username`/`display_name` için UPDATE sütun izinleri, `gunluk_security_status` (yalnızca sahibinin kurulum durumunu döndürür). Diğer sunucu verileri değiştirilmedi.
+
+## Güvenlik notu
+iOS Safari ve Android gerçek cihazlarda kurulum / Face ID testi ayrıca yapılmalıdır. Hesap kurtarma kodunu kaybetmeyin; yeni simge eskisiyle aynı oturumu paylaşmayabilir. Cihazın ele geçirilmesine karşı mutlak koruma garanti edilmez.
