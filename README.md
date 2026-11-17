@@ -1,12 +1,14 @@
-# Günlük v1.5 — Ana Ekrana Ekle / Simge Yönetimi
+# Günlük v1.6 — Güvenlik, Cihazlar ve Gizli Bildirimler
 
-- v1.4 ile gelen 5 gerçek görünüm korunmuştur: Günlük, Takvim, Hesap Makinesi, Kredi Hesaplama, Sudoku.
-- Ayarlar > Simge tasarımı > Ana ekrana ekle: seçilen simgeye özel sayfaya yönlendirme.
-- iPhone: kurulum sayfasını Safari’de aç, Paylaş > Ana Ekrana Ekle > Ekle.
-- Android Chrome: desteklenen cihazda kurulum penceresi; diğerlerinde ⋮ > Ana ekrana ekle / Uygulamayı yükle.
-- Eski PWA simgesi cihaz tarafından otomatik değiştirilemez, yeni simge eklenir.
-- YENİ kurulum özellikle iPhone'da ayrı veri deposu/kimlik ile başlayabilir. Eski simgeyi silmeden önce verilerini, sohbet erişimini doğrula.
-- Sohbetin anonim kimliğini taşımak için parola kurtarma mekanizması henüz yoktur.
-- Özel giriş yine tüm görünüm ekranlarında ◇ düğmesini 1,5 saniye basılı tutma yöntemiyle çalışır.
+Yeni işlevler Kişiler > Güvenlik ve gizlilik ayarları bölümünde.
 
-GitHub Pages ana klasörüne ZIP içindeki 28 dosyanın tamamını yükleyin; ZIP'i tek dosya olarak yüklemeyin. `sw.js` önbelleği `gunluk-v15` sürümüne yükseltilmiştir.
+- Okunmamış mesaj yalnızca dokununca açılır; okunan mesaj sunucudan silindikten sonra en fazla 10 saniye görüntülenir. Konuşmadan çıkınca ekran hemen temizlenir.
+- Face ID / Touch ID (WebAuthn PRF destekleniyorsa): kişisel parolayla etkinleştirilir; özel anahtar biyometrik passkey'den türetilen anahtarla sarılır. Desteklenmiyorsa kişisel parola kullanılır.
+- Otomatik kilit: 15/30/60/120/300 saniye ve uygulama arka plana geçtiğinde anında.
+- Güvenilir cihazlar: listeleme, cihaz erişimini kaldırma.
+- Kurtarma: tek kullanımlık 256 bit kod + kişisel parola; kod kaybedilirse eski kodla yenilenir. Yeni cihazda aynı mesaj kimliğine bağlanır.
+- Gizli Web Push: etkinleştirme ve devre dışı bırakma, bildirime mesaj metni ve gönderen adı konmaz. iPhone Home Screen PWA + izin gerektirir.
+
+Yayınlama: Bu paketteki dosyaları GitHub ygzonair/Gunluk `main` ana dizinine yükleyip Commit changes yap. Önce eski PWA'yı silme.
+
+ÖNEMLİ: WebAuthn PRF çalışması gerçek iPhone'da ve Android'de kontrol edilmedi. Bildirimlerin iOS üzerinde uçtan uca teslimi doğrulanmadı. Bu sistem bağımsız güvenlik denetiminden geçmedi. Biyometri iPhone kilit kodunu alternatif kabul edebilir. Görünen metnin silinmesi RAM/ekran görüntüsü/klavye izi/sunucu yedeklerini bütünüyle silmez.
