@@ -30,8 +30,8 @@
 <form id="register-form">
 <label class="field"><span>Kullanıcı adı</span><input id="new-handle" required minlength="3" maxlength="24" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="ornek_kullanici" ></label>
 <label class="field"><span>Görünen ad</span><input id="new-display" maxlength="40" required placeholder="Adın"></label>
-<label class="field"><span>Sadece senin bildiğin parola</span><input id="new-password" type="password" minlength="12" required autocomplete="new-password" placeholder="En az 12 karakter"></label>
-<label class="field"><span>Parolayı tekrar yaz</span><input id="new-confirm" type="password" minlength="12" required autocomplete="new-password" placeholder="Parolayı doğrula"></label>
+<label class="field"><span>Sadece senin bildiğin parola</span><input id="new-password" type="password" required autocomplete="new-password" placeholder="Kişisel parolan"></label>
+<label class="field"><span>Parolayı tekrar yaz</span><input id="new-confirm" type="password" required autocomplete="new-password" placeholder="Parolayı doğrula"></label>
 <button id="create-account" type="submit" class="btn block">Bu cihazda profil oluştur</button>
 </form><div class="notice status hidden" id="register-status" role="alert"></div>
 <p class="hint">Parolan sunucuya gönderilmez. Cihaz değişiminde tek kullanımlık kurtarma kodu ve kişisel parolan gerekir.</p></div>
@@ -65,8 +65,8 @@
  <p class="hint">Parolan yalnızca şifreleme anahtarını korur. Değiştirince diğer cihazlarında da yeni parolanı kullanırsın; kişiler ve mesajlar değişmez.</p>
  <form id="password-change-form" autocomplete="off">
   <label class="field"><span>Mevcut parola</span><input id="pw-current" type="password" autocomplete="off" required></label>
-  <label class="field"><span>Yeni parola (en az 12 karakter)</span><input id="pw-new" type="password" autocomplete="off" minlength="12" required></label>
-  <label class="field"><span>Yeni parolayı doğrula</span><input id="pw-confirm" type="password" autocomplete="off" minlength="12" required></label>
+  <label class="field"><span>Yeni parola</span><input id="pw-new" type="password" autocomplete="off" required></label>
+  <label class="field"><span>Yeni parolayı doğrula</span><input id="pw-confirm" type="password" autocomplete="off" required></label>
   <button id="change-password" class="btn ghost block" type="submit">Parolamı değiştir</button>
  </form>
  <div id="password-change-status" class="notice status hidden" role="status"></div>
@@ -98,7 +98,7 @@
 <div class="notice status hidden" id="chat-status" role="status"></div></div>
 </section>
 <div id="global-status" class="notice status hidden" role="alert"></div>
-<p class="bottom">Kişiler · v1.8</p>
+<p class="bottom">Kişiler · v1.8.1</p>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0" crossorigin="anonymous"></script>
 <script>
@@ -153,7 +153,7 @@ $('#lock-now').onclick=lock;$('#lock-conversation').onclick=lock;
 $('#register-form').onsubmit=async e=>{e.preventDefault();const b=$('#create-account');b.disabled=true;try{
 const handle=normHandle($('#new-handle').value),display=safeName($('#new-display').value),pass=$('#new-password').value;
 if(!/^[a-z0-9_]{3,24}$/.test(handle))throw Error('Kullanıcı adı 3–24 karakter; küçük harf, rakam ve alt çizgi içermeli.');
-if(!display)throw Error('Görünen ad yaz.');if(pass.length<12)throw Error('En az 12 karakterlik kişisel parola seç.');if(pass!==$('#new-confirm').value)throw Error('Parolalar eşleşmiyor.');
+if(!display)throw Error('Görünen ad yaz.');if(!pass)throw Error('Kişisel parola boş olamaz.');if(pass!==$('#new-confirm').value)throw Error('Parolalar eşleşmiyor.');
 info('#register-status','Güvenli anahtarın hazırlanıyor…');const identity=await makeIdentity(pass);
 const result=await db.rpc('gunluk_register_profile',{p_username:handle,p_display_name:display,p_public_jwk:identity.jwk,p_wrapped_key:identity.wrapped});if(result.error)throw result.error;
 accountId=user.id;const p={data:{id:accountId,username:handle,display_name:display,public_jwk:identity.jwk}};
@@ -225,7 +225,7 @@ $('#password-change-form').onsubmit=async e=>{
  e.preventDefault();const b=$('#change-password');b.disabled=true;
  const current=$('#pw-current').value,next=$('#pw-new').value,confirmation=$('#pw-confirm').value;
  try{
-  if(next.length<12)throw Error('Yeni parola en az 12 karakter olmalı.');
+  if(!next)throw Error('Yeni parola boş olamaz.');
   if(next!==confirmation)throw Error('Yeni parolalar eşleşmiyor.');
   await rotatePassword(current,next);
   info('#password-change-status','Parolan değiştirildi. Face ID kaydın ve şifreli sohbetlerin korundu. Diğer cihazlarda yeni parolanı kullan.');
@@ -350,7 +350,7 @@ $('#enable-bio').onclick=async()=>{
  const b=$('#enable-bio');b.disabled=true;clearBioPending();
  try{
   if(!navigator.credentials?.create||!navigator.credentials?.get||!globalThis.PublicKeyCredential)throw Error('Bu tarayıcıda Face ID / Touch ID için WebAuthn kullanılamıyor.');
-  const pw=$('#bio-password').value;if(pw.length<12)throw Error('Kişisel parolanı gir (en az 12 karakter).');
+  const pw=$('#bio-password').value;if(!pw)throw Error('Kişisel parolanı gir.');
   const raw=await unwrapWithPassword(pw);
   bioPending={raw:new Uint8Array(raw),accountId,revision:epoch,salt:bytes(32),kdfSalt:bytes(16)};
   $('#bio-password').value='';visible('#finish-bio');info('#biometric-status','Parolan doğrulandı. Şimdi “Face ID / Touch ID kaydet” düğmesine dokun.');
