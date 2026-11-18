@@ -1,20 +1,22 @@
-# Günlük v1.7 — Arayüz ve Profil Güncellemesi
+# Günlük v1.8 — Biyometrik kilit, kişisel parola, anında mesaj geçişi
 
-Güncellenen dosyalar: `index.html`, `kisiler.html`, `sw.js`, `install-diary.html`, `install-calendar.html`, `install-calculator.html`, `install-loan.html`, `install-sudoku.html`.
-
-## Değişiklikler
-- Görünüm değiştiğinde başlık, uygulama adı metası ve simge eşleşir. iPhone / Android'de mevcut kurulu uygulamanın sistemdeki adı otomatik değişmeyebilir: doğru simge/isim için yeni kurulum sayfası kullanılmalıdır.
-- Kullanıcı adı ve görünen ad, özel Kişiler sayfasındaki `Hesap bilgileri` bölümünden düzenlenebilir. Şifreleme anahtarı, kişi ID'si ve mevcut mesajlar değiştirilmez.
-- Normal Ayarlar'daki Veriler Bu Cihazda / Belge Güvenliği / sürüm kutusu kaldırıldı. Özel hesabın güvenliği normal Ayarlar'da gösterilmez.
-- Özel bölümde kurtarma ve Face ID durumuna göre küçük, zorlamayan güvenlik uyarısı görünür.
-- Sohbet ekranı sadeleştirildi; önceki 10 saniye / okumada silme / çıkışta sıfırlama davranışı korundu.
-- Ana ekrana ekleme bağlantıları ve cihaz değiştirme uyarısı güncellendi.
+## Güncellenen dosyalar
+- `kisiler.html`: Hesap Bilgileri altında parola değiştir; daha dayanıklı WebAuthn PRF ile Face ID / Touch ID açma, uyumluluk modu, biyometrik kaydı güvenli biçimde yeniden ekleme/kaldırma; mesaj açıkken bir sonrakine anında geçiş.
+- `sw.js`: Önbellek sürümü `gunluk-v18`. Eski önbelleğin yeni sohbet dosyasını gölgelemesini önler.
 
 ## Yayın
-ZIP'i açın ve dosyaları `ygzonair/Gunluk` GitHub deposunun `main` dalının ana dizinine yükleyin. 8 güncel dosyayı mevcut dosyaların yerine koyun. GitHub Pages işlemi tamamlandıktan sonra uygulamayı tamamen kapatıp yeniden açın.
+1. `Gunluk_v1_8_Guncelleme.zip` içindeki `kisiler.html` ve `sw.js` dosyalarını GitHub `ygzonair/Gunluk` deposunun `main` kök dizinine yükleyip aynı isimli dosyalarla değiştir.
+2. GitHub Pages Actions işlemi başarılı olduktan sonra uygulamayı kapatıp yeniden aç.
+3. Cache eski sürümde kalırsa Safari/Chrome'da siteyi yeniden yükle. **Uygulama verilerini silme**: anonim oturum ve kişi kimliği kaybolabilir.
 
-## Sunucu
-Supabase migrasyonu uygulandı: `gunluk_profiles_owner_edit` RLS politikası, `username`/`display_name` için UPDATE sütun izinleri, `gunluk_security_status` (yalnızca sahibinin kurulum durumunu döndürür). Diğer sunucu verileri değiştirilmedi.
+## Kullanım
+- Parola: Gizli alan → Kişiler → Hesap bilgileri → Kişisel parolayı değiştir. Eski parola gerekir; yeni parola en az 12 karakter.
+- Face ID / Touch ID: Kişisel parolayla aç → Güvenlik ve gizlilik → Face ID / Touch ID. Kişisel parolanı doğrula ve ardından ayrı düğmeye dokunarak passkey kaydını başlat. WebAuthn PRF sonucu ilk işlemde gelmezse ayrı doğrulama düğmesine bas. Kayıt bozuksa kişisel parolayla yalnızca sorunlu biyometrik anahtarı kaldırıp yeniden kaydet.
+- Mesajlar: Okunmamış mesaj kilitli kalır. Bir mesaj açıkken diğerine dokunulduğunda birinci mesaj anında ekrandan kaldırılır; ikinci mesaj açılınca kendi 10 saniyelik süresine başlar. Sunucudan silme doğrulanmazsa mesaj gösterilmez. Sohbetten çıkınca açık mesaj silinir.
 
-## Güvenlik notu
-iOS Safari ve Android gerçek cihazlarda kurulum / Face ID testi ayrıca yapılmalıdır. Hesap kurtarma kodunu kaybetmeyin; yeni simge eskisiyle aynı oturumu paylaşmayabilir. Cihazın ele geçirilmesine karşı mutlak koruma garanti edilmez.
+## Test durumu
+- JS sözdizimi, HTML ID benzersizliği ve mobil statik görünüm kontrol edildi.
+- Node WebCrypto + sahte veritabanı ile parola değiştirme, eski parola reddi, özel anahtar korunması, mesaj geçişi, biyometrik kaydın çözülmesi ve iki dokunuşlu kayıt akışı test edildi.
+- **Gerçek iPhone üzerindeki WebAuthn PRF doğrulaması test edilemedi**; Safari/iOS uyumluluğu değişebilir. PRF desteği yoksa kişisel parolayla açma korunur. Bu uygulama bağımsız güvenlik denetiminden geçmiş değildir.
+
+**Not:** Kişisel parola değişikliği diğer güvenilir cihazların oturumlarını kendiliğinden iptal etmez. Ancak sonraki kilit açılışlarında yeni parola gerekir. Biyometrik kayıt aynı özel anahtarı kullandığı için parola değişiminden etkilenmez.

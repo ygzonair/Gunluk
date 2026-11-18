@@ -60,12 +60,29 @@
   <button id="save-profile" type="submit" class="btn block">Değişiklikleri kaydet</button>
  </form>
  <div id="profile-edit-status" class="notice status hidden" role="status"></div>
+ <div class="line"></div>
+ <h3 style="margin:5px 0 9px">Kişisel parolayı değiştir</h3>
+ <p class="hint">Parolan yalnızca şifreleme anahtarını korur. Değiştirince diğer cihazlarında da yeni parolanı kullanırsın; kişiler ve mesajlar değişmez.</p>
+ <form id="password-change-form" autocomplete="off">
+  <label class="field"><span>Mevcut parola</span><input id="pw-current" type="password" autocomplete="off" required></label>
+  <label class="field"><span>Yeni parola (en az 12 karakter)</span><input id="pw-new" type="password" autocomplete="off" minlength="12" required></label>
+  <label class="field"><span>Yeni parolayı doğrula</span><input id="pw-confirm" type="password" autocomplete="off" minlength="12" required></label>
+  <button id="change-password" class="btn ghost block" type="submit">Parolamı değiştir</button>
+ </form>
+ <div id="password-change-status" class="notice status hidden" role="status"></div>
 </details>
 <div id="private-security-reminder" class="security-reminder hidden" role="status"><div id="private-security-notice"></div><button type="button" class="btn ghost small" id="open-security-settings">Güvenliği kontrol et</button></div>
 <details id="security-details" class="card security-settings"><summary>Güvenlik ve gizlilik</summary>
 <div class="line"></div><h3>Otomatik kilit</h3><label class="field"><span>Son işlemden sonra</span><select id="auto-lock-duration"><option value="15">15 saniye</option><option value="30">30 saniye</option><option value="60">1 dakika</option><option value="120">2 dakika</option><option value="300">5 dakika</option></select></label>
 <p class="hint">Uygulama arka plana geçerse seçili süreden bağımsız olarak hemen kilitlenir.</p>
-<div class="line"></div><h3>Face ID / Touch ID</h3><p class="hint">Desteklenen cihazlarda passkey'in kriptografik anahtarıyla sohbet açılır. iPhone kilit kodu yedek doğrulama olabilir.</p><div class="field"><label for="bio-password">Etkinleştirmek için kişisel parolan</label><input id="bio-password" type="password" autocomplete="off" placeholder="Kişisel parolan"></div><button id="enable-bio" class="btn ghost small" type="button">Face ID / Touch ID etkinleştir</button><div id="biometric-status" class="notice status hidden" role="status"></div>
+<div class="line"></div><h3>Face ID / Touch ID</h3>
+<p class="hint">Çalışmıyorsa kişisel parolanla açıp aşağıdan yeniden kaydet. Şifreleme anahtarın ve konuşmaların korunur. iPhone, Face ID yerine cihaz kilit kodunu sunabilir.</p>
+<div class="field"><label for="bio-password">Kişisel parolan</label><input id="bio-password" type="password" autocomplete="off" placeholder="Kişisel parolan"></div>
+<div class="btnrow"><button id="enable-bio" class="btn ghost small" type="button">Parolayı doğrula</button>
+<button id="finish-bio" class="btn small hidden" type="button">Face ID / Touch ID kaydet</button>
+<button id="verify-bio" class="btn small hidden" type="button">Face ID ile doğrula ve bitir</button></div>
+<div id="bio-record-list" style="margin-top:13px"></div>
+<div id="biometric-status" class="notice status hidden" role="status"></div>
 <div class="line"></div><h3>Güvenilir cihazlar</h3><p class="hint">Yeni cihaz eklemek için kurtarma kodu gerekir. Buradan tanımadığın cihazların erişimini kaldırabilirsin.</p><div id="trusted-device-list"></div><div id="devices-status" class="notice status hidden" role="status"></div>
 <div class="line"></div><h3>Hesap kurtarma</h3><p class="hint">Tek kullanımlık kodu güvenli bir yerde sakla. Yeni simge veya telefon farklı oturum açarsa kişisel parolanla birlikte bu kod gerekli olabilir. Eski simgeyi yeni cihazın erişimini doğrulamadan kaldırma. Kodunu kimseyle paylaşma.</p><label class="field"><span>Eski kurtarma kodu (yenileme sırasında)</span><input id="recovery-old" autocomplete="off" spellcheck="false" placeholder="İlk kodsa boş bırak"></label><button id="new-recovery" class="btn ghost small" type="button">Tek kullanımlık kurtarma kodu oluştur</button><div id="recovery-output" class="hidden"><p class="hint"><strong>Kodu hemen kaydet:</strong> Sayfadan çıkınca kaybolacak.</p><div id="recovery-code-view" class="code"></div><button id="copy-recovery" type="button" class="btn ghost small">Kodu kopyala</button></div><div id="recovery-status" class="notice status hidden" role="status"></div>
 <div class="line"></div><h3>Gizli bildirimler</h3><p class="hint">Yalnızca “Yeni bildirim var” yazar; mesaj metni ve gönderen adı gösterilmez. iPhone'da ana ekrana eklenmiş uygulama ve izin gerekir.</p><div class="btnrow"><button id="enable-push" type="button" class="btn ghost small">Bildirimi aç</button><button id="disable-push" type="button" class="btn ghost small">Bildirimi kapat</button></div><div id="push-status" class="notice status hidden" role="status"></div>
@@ -81,7 +98,7 @@
 <div class="notice status hidden" id="chat-status" role="status"></div></div>
 </section>
 <div id="global-status" class="notice status hidden" role="alert"></div>
-<p class="bottom">Kişiler · v1.7</p>
+<p class="bottom">Kişiler · v1.8</p>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0" crossorigin="anonymous"></script>
 <script>
@@ -91,7 +108,7 @@ const URL_BASE='https://cegquyijjdvaccancagi.supabase.co';
 const PUBLIC_KEY='sb_publishable_LRlXW2BWPcZnaxhltFpUoA_2HZtkH6Z';
 const enc=new TextEncoder(),dec=new TextDecoder();
 let db=null,user=null,accountId=null,profile=null,privateKey=null,people=[],contacts=[],currentContact=null;
-let poll=null,channel=null,openTimer=null,openTick=null,activeOpen=null,opening=false,unlocked=false,epoch=0,refreshing=false,contactRefreshing=false,lastActivity=Date.now(),idleWatcher=null,deviceWatcher=null,bioEntries=[];
+let poll=null,channel=null,openTimer=null,openTick=null,activeOpen=null,openedButton=null,opening=false,unlocked=false,epoch=0,refreshing=false,contactRefreshing=false,lastActivity=Date.now(),idleWatcher=null,deviceWatcher=null,bioEntries=[],bioPending=null,bioCompatMode=false;
 function visible(id,on=true){$(id).classList.toggle('hidden',!on)}
 function info(id,text,bad=false){const n=$(id);n.textContent=text;n.classList.remove('hidden','error');if(bad)n.classList.add('error')}
 function clearInfo(id){$(id).classList.add('hidden')}
@@ -118,14 +135,20 @@ const {data:record,error}=await db.from('gunluk_profiles').select('id,username,d
 visible('#loading',false);if(!profile){visible('#setup');return}renderLock()}
 function renderLock(){visible('#private-security-reminder',false);$('#profile-details').open=false;privateKey=null;unlocked=false;visible('#setup',false);visible('#workspace',false);visible('#conversation',false);visible('#unlock');$('#unlock-name').textContent=' '+(profile?.display_name||'');$('#unlock-password').value='';clearInfo('#unlock-status');loadBioChoices().catch(()=>{})}
 function stopRealtime(){if(poll){clearInterval(poll);poll=null}if(channel&&db){db.removeChannel(channel).catch(()=>{});channel=null}}
-function hideOpened(){if(openTimer){clearTimeout(openTimer);openTimer=null}if(openTick){clearInterval(openTick);openTick=null}activeOpen=null;const box=$('#chat-list');box.replaceChildren();}
+function dismissOpened(){
+ if(openTimer){clearTimeout(openTimer);openTimer=null}
+ if(openTick){clearInterval(openTick);openTick=null}
+ activeOpen=null;
+ if(openedButton){openedButton.replaceChildren();openedButton.remove();openedButton=null}
+}
+function hideOpened(){dismissOpened();$('#chat-list').replaceChildren()}
 function closeConversation(){epoch++;hideOpened();opening=false;$('#message-input').value='';currentContact=null;clearInfo('#chat-status');visible('#conversation',false);visible('#workspace');refreshContacts();}
 function activity(){lastActivity=Date.now()}
 function lockLimit(){let x=30;try{x=Number(localStorage.getItem('gunluk-idle-lock-v16')||'30')}catch{}return [15,30,60,120,300].includes(x)?x:30}
 function beginSafetyWatch(){if(idleWatcher)clearInterval(idleWatcher);lastActivity=Date.now();idleWatcher=setInterval(()=>{if(unlocked&&Date.now()-lastActivity>lockLimit()*1000)lock()},1000);if(deviceWatcher)clearInterval(deviceWatcher);deviceWatcher=setInterval(async()=>{if(!unlocked||!db||!user)return;try{const r=await db.from('gunluk_trusted_devices').select('owner_id').eq('auth_uid',user.id).maybeSingle();if(r.error||r.data?.owner_id!==accountId){lock();info('#unlock-status','Bu cihazın erişimi kaldırılmış. Yeniden oturum açman gerekebilir.',true)}}catch{}},45000)}
 for(const ev of ['pointerdown','keydown','touchstart'])document.addEventListener(ev,activity,{passive:true,capture:true});
 
-function lock(){epoch++;opening=false;stopRealtime();hideOpened();if(idleWatcher){clearInterval(idleWatcher);idleWatcher=null}if(deviceWatcher){clearInterval(deviceWatcher);deviceWatcher=null}$('#message-input').value='';$('#bio-password').value='';$('#recovery-code-view').textContent='';visible('#recovery-output',false);privateKey=null;currentContact=null;renderLock()}
+function lock(){epoch++;opening=false;clearBioPending();stopRealtime();hideOpened();if(idleWatcher){clearInterval(idleWatcher);idleWatcher=null}if(deviceWatcher){clearInterval(deviceWatcher);deviceWatcher=null}$('#message-input').value='';$('#bio-password').value='';$('#recovery-code-view').textContent='';visible('#recovery-output',false);privateKey=null;currentContact=null;renderLock()}
 $('#lock-now').onclick=lock;$('#lock-conversation').onclick=lock;
 $('#register-form').onsubmit=async e=>{e.preventDefault();const b=$('#create-account');b.disabled=true;try{
 const handle=normHandle($('#new-handle').value),display=safeName($('#new-display').value),pass=$('#new-password').value;
@@ -172,6 +195,43 @@ $('#profile-edit-form').onsubmit=async e=>{
   await refreshContacts();
  }catch(e){info('#profile-edit-status',err(e),true)}finally{b.disabled=false}
 };
+async function rotatePassword(currentPassword,newPassword){
+ if(!unlocked||!privateKey||!accountId)throw Error('Önce hesabını aç.');
+ if(currentPassword===newPassword)throw Error('Yeni parola eskisinden farklı olmalı.');
+ const revision=epoch;
+ // Rewrap exactly the same original private key. Never generate a new identity.
+ const {data:stored,error:readError}=await db.from('gunluk_key_vault').select('wrapped_key').eq('owner_id',accountId).single();
+ if(readError)throw readError;
+ const old=stored.wrapped_key;
+ if(old?.v!==1)throw Error('Anahtar biçimi desteklenmiyor.');
+ const oldKey=await passwordKey(currentPassword,from64(old.salt));
+ let raw;
+ try{raw=await crypto.subtle.decrypt({name:'AES-GCM',iv:from64(old.iv),additionalData:enc.encode('gunluk-v13-private-key')},oldKey,from64(old.ct))}
+ catch(e){if(e.name==='OperationError')throw Error('Mevcut parola yanlış.');throw e}
+ const salt=bytes(16),iv=bytes(12),newKey=await passwordKey(newPassword,salt);
+ const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:enc.encode('gunluk-v13-private-key')},newKey,raw);
+ const wrapped={v:1,salt:to64(salt),iv:to64(iv),ct:to64(ct)};
+ // Verify new password really decrypts the identical key BEFORE committing.
+ const roundtrip=await crypto.subtle.decrypt({name:'AES-GCM',iv,additionalData:enc.encode('gunluk-v13-private-key')},newKey,ct);
+ const x=new Uint8Array(raw),y=new Uint8Array(roundtrip);
+ if(x.length!==y.length||!x.every((n,i)=>n===y[i]))throw Error('Anahtar doğrulaması başarısız.');
+ if(revision!==epoch||!unlocked)throw Error('İşlem sırasında sohbet kilitlendi.');
+ const {data,error}=await db.from('gunluk_key_vault').update({wrapped_key:wrapped}).eq('owner_id',accountId).select('owner_id');
+ if(error)throw error;
+ if(!Array.isArray(data)||data.length!==1)throw Error('Anahtar güncellenemedi.');
+ return true;
+}
+$('#password-change-form').onsubmit=async e=>{
+ e.preventDefault();const b=$('#change-password');b.disabled=true;
+ const current=$('#pw-current').value,next=$('#pw-new').value,confirmation=$('#pw-confirm').value;
+ try{
+  if(next.length<12)throw Error('Yeni parola en az 12 karakter olmalı.');
+  if(next!==confirmation)throw Error('Yeni parolalar eşleşmiyor.');
+  await rotatePassword(current,next);
+  info('#password-change-status','Parolan değiştirildi. Face ID kaydın ve şifreli sohbetlerin korundu. Diğer cihazlarda yeni parolanı kullan.');
+ }catch(e){info('#password-change-status',err(e),true)}
+ finally{$('#pw-current').value='';$('#pw-new').value='';$('#pw-confirm').value='';b.disabled=false}
+};
 async function loadPrivateSecurityReminder(){
  if(!unlocked||!db||!accountId)return;
  const revision=epoch;
@@ -203,12 +263,16 @@ $('#verify-contact').onclick=async()=>{if(!currentContact)return;try{const id=aw
 async function refreshMessages(){if(!currentContact||!unlocked||refreshing||opening||activeOpen||document.hidden)return;refreshing=true;const peer=currentContact,revision=epoch;try{const q='and(sender_id.eq.'+accountId+',recipient_id.eq.'+peer.id+'),and(sender_id.eq.'+peer.id+',recipient_id.eq.'+accountId+')';const {data,error}=await db.from('gunluk_direct_messages').select('id,sender_id,recipient_id,payload,created_at').or(q).order('created_at',{ascending:true}).limit(100);if(error)throw error;if(revision!==epoch||opening||activeOpen||currentContact?.id!==peer.id)return;
 const root=$('#chat-list');const bottom=root.scrollHeight-root.scrollTop-root.clientHeight<80;root.textContent='';if(!data?.length){const el=document.createElement('div');el.className='empty';el.textContent='Henüz mesaj yok. İlk mesajı gönder.';root.append(el)}for(const m of data||[]){const own=m.sender_id===accountId;const b=document.createElement('button');b.type='button';b.className='bubble'+(own?' mine':'');const span=document.createElement('span');span.textContent=own?'🔒 Gönderildi':'🔒 Okumak için dokun';const time=document.createElement('small');time.className='time';time.textContent=new Date(m.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});b.append(span,time);if(own){b.disabled=true;}else b.onclick=()=>readMessage(m,b,span);root.append(b)}if(bottom)root.scrollTop=root.scrollHeight;
 }catch(e){info('#chat-status','Mesajlar alınamadı: '+err(e),true)}finally{refreshing=false}}
-async function readMessage(m,button,text){if(opening||activeOpen||!unlocked||!privateKey||document.hidden)return;const revision=epoch;opening=true;button.disabled=true;try{const plain=await openPacket(m.payload,m.sender_id,m.recipient_id,currentContact);
+async function readMessage(m,button,text){
+ if(opening||!unlocked||!privateKey||document.hidden)return;
+ if(activeOpen===m.id)return;
+ if(activeOpen)dismissOpened(); // No waiting: previous plaintext removed immediately.
+ const revision=epoch;opening=true;button.disabled=true;try{const plain=await openPacket(m.payload,m.sender_id,m.recipient_id,currentContact);
 if(epoch!==revision||document.hidden||!privateKey)return;
 const {data,error}=await db.from('gunluk_direct_messages').delete().eq('id',m.id).eq('recipient_id',accountId).select('id');if(error)throw error;if(data?.length!==1)throw Error('Mesaj daha önce açılmış veya süresi dolmuş.');if(epoch!==revision||document.hidden||!privateKey)return;
-activeOpen=m.id;button.classList.add('open');text.textContent=plain;const when=document.createElement('span');when.className='time';let remaining=10;when.textContent='10 saniye';button.append(when);
+activeOpen=m.id;openedButton=button;button.classList.add('open');text.textContent=plain;const when=document.createElement('span');when.className='time';let remaining=10;when.textContent='10 saniye';button.append(when);
 openTick=setInterval(()=>{remaining=Math.max(0,remaining-1);when.textContent=remaining+' saniye';if(!remaining&&openTick){clearInterval(openTick);openTick=null}},1000);
-openTimer=setTimeout(()=>{hideOpened();refreshMessages()},10000);
+openTimer=setTimeout(()=>{dismissOpened();refreshMessages()},10000);
 clearInfo('#chat-status');
 }catch(e){if(epoch===revision)info('#chat-status',e?.name==='OperationError'?'Mesaj çözülemedi. Kişi anahtarı değişmiş olabilir.':err(e),true)}finally{button.disabled=false;if(epoch===revision){opening=false;if(!activeOpen)refreshMessages()}}}
 $('#send-form').onsubmit=async e=>{e.preventDefault();const b=$('#send-button');b.disabled=true;const peer=currentContact,revision=epoch;try{if(!peer||!privateKey)throw Error('Sohbet kilitli.');const content=$('#message-input').value.trim();if(!content)throw Error('Mesaj yaz.');const pkt=await seal(content,peer);if(epoch!==revision||!currentContact)throw Error('Konuşma kilitlendi.');const {error}=await db.from('gunluk_direct_messages').insert({sender_id:accountId,recipient_id:peer.id,payload:pkt});if(error)throw error;$('#message-input').value='';await refreshMessages();clearInfo('#chat-status');db.functions.invoke('gunluk-private-push',{body:{recipient_id:peer.id}}).catch(()=>{})}catch(e){info('#chat-status','Gönderilemedi: '+err(e),true)}finally{b.disabled=false}};
@@ -217,20 +281,146 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&unlocked)l
 function b64url(buffer){return to64(buffer).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
 function un64url(str){return from64(str.replace(/-/g,'+').replace(/_/g,'/')+'='.repeat((4-str.length%4)%4))}
 function hexBytes(buffer){return [...new Uint8Array(buffer)].map(v=>v.toString(16).padStart(2,'0')).join('')}
-async function loadBioChoices(){if(!profile||!db)return;try{const r=await db.from('gunluk_biometric_keys').select('credential_id,label,wrapped_key').eq('owner_id',profile.id).order('created_at',{ascending:false});if(r.error)throw r.error;bioEntries=r.data||[];visible('#unlock-biometric',bioEntries.length>0&&!!navigator.credentials?.get)}catch{visible('#unlock-biometric',false)}}
+function clearBioPending(){
+ if(bioPending?.raw)bioPending.raw.fill(0);
+ bioPending=null;
+ const finish=$('#finish-bio'),verify=$('#verify-bio');
+ if(finish)visible('#finish-bio',false);
+ if(verify)visible('#verify-bio',false);
+}
+function describeBioError(e){
+ if(e?.name==='NotAllowedError'||e?.name==='AbortError')return 'Biyometrik doğrulama iptal edildi veya cihaz izin vermedi. Parolayla giriş yapıp Güvenlik bölümünden yeni kayıt oluşturabilirsin.';
+ if(e?.name==='SecurityError')return 'Biyometrik doğrulama yalnızca güvenli (HTTPS) uygulama adresinde çalışır.';
+ return err(e)
+}
+async function loadBioChoices(){
+ if(!profile||!db)return;
+ try{
+  const r=await db.from('gunluk_biometric_keys').select('credential_id,label,wrapped_key,created_at').eq('owner_id',profile.id).order('created_at',{ascending:false});
+  if(r.error)throw r.error;
+  bioEntries=r.data||[];
+  visible('#unlock-biometric',bioEntries.length>0&&!!navigator.credentials?.get);
+  if(unlocked)renderBioRecords();
+ }catch(e){bioEntries=[];visible('#unlock-biometric',false);if(unlocked)info('#biometric-status','Kayıtlar alınamadı: '+err(e),true)}
+}
+function renderBioRecords(){
+ const box=$('#bio-record-list');if(!box)return;box.replaceChildren();
+ if(!bioEntries.length)return;
+ const help=document.createElement('p');help.className='hint';help.textContent='Kayıtlı biyometrik anahtarlar (bozuksa kişisel parolanı girip yalnızca o kaydı kaldır):';box.append(help);
+ for(const record of bioEntries){
+  const row=document.createElement('div');row.className='device-row';
+  const label=document.createElement('div');
+  const n=document.createElement('strong');n.textContent=record.label||'Biyometrik anahtar';
+  const d=document.createElement('span');d.textContent=new Date(record.created_at).toLocaleDateString('tr-TR');
+  label.append(n,d);row.append(label);
+  const b=document.createElement('button');b.type='button';b.className='btn ghost small';b.textContent='Kaldır';
+  b.onclick=async()=>{
+   if(!confirm('Yalnızca bu biyometrik kayıt kaldırılacak. Diğer cihazların ve şifreli mesajların etkilenmeyecek. Devam?'))return;
+   b.disabled=true;
+   try{
+    const pw=$('#bio-password').value;if(!pw)throw Error('Önce yukarıya kişisel parolanı gir.');
+    await unwrapWithPassword(pw);
+    const {data,error}=await db.from('gunluk_biometric_keys').delete().eq('owner_id',accountId).eq('credential_id',record.credential_id).select('credential_id');
+    if(error)throw error;
+    if(data?.length!==1)throw Error('Kayıt kaldırılmadı.');
+    await loadBioChoices();info('#biometric-status','Biyometrik kayıt kaldırıldı. İstersen yeniden kaydedebilirsin.');
+    $('#bio-password').value='';
+   }catch(e){info('#biometric-status',e?.name==='OperationError'?'Kişisel parola yanlış.':err(e),true)}finally{b.disabled=false}
+  };
+  row.append(b);box.append(row);
+ }
+}
 async function unwrapWithPassword(password){const r=await db.from('gunluk_key_vault').select('wrapped_key').eq('owner_id',accountId).single();if(r.error)throw r.error;const w=r.data.wrapped_key;const key=await passwordKey(password,from64(w.salt));return crypto.subtle.decrypt({name:'AES-GCM',iv:from64(w.iv),additionalData:enc.encode('gunluk-v13-private-key')},key,from64(w.ct))}
-async function deriveBioKey(prfOutput,kdfSalt){const base=await crypto.subtle.importKey('raw',prfOutput,'HKDF',false,['deriveKey']);return crypto.subtle.deriveKey({name:'HKDF',hash:'SHA-256',salt:kdfSalt,info:enc.encode('gunluk-v16-biometric-key')},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
-async function registerBiometric(){if(!navigator.credentials?.create||!navigator.credentials?.get||!globalThis.PublicKeyCredential)throw Error('Bu tarayıcıda passkey desteklenmiyor. Kişisel parolayı kullan.');const pass=$('#bio-password').value;if(pass.length<12)throw Error('Önce kişisel parolanı gir.');const raw=await unwrapWithPassword(pass);const salt=bytes(32),kdfSalt=bytes(16);const credential=await navigator.credentials.create({publicKey:{challenge:bytes(32),rp:{name:'Günlük'},user:{id:bytes(24),name:profile.username,displayName:profile.display_name},pubKeyCredParams:[{type:'public-key',alg:-7}],authenticatorSelection:{authenticatorAttachment:'platform',residentKey:'preferred',userVerification:'required'},attestation:'none',timeout:60000,extensions:{prf:{eval:{first:salt}}}}});if(!credential)throw Error('Face ID kaydı iptal edildi.');const credId=b64url(credential.rawId);
-const prfGet=await navigator.credentials.get({publicKey:{challenge:bytes(32),allowCredentials:[{type:'public-key',id:credential.rawId}],userVerification:'required',timeout:60000,extensions:{prf:{evalByCredential:{[credId]:{first:salt}}}}}});
-const first=prfGet?.getClientExtensionResults?.()?.prf?.results?.first;
-if(!first)throw Error('Bu iPhone/tarayıcı şifreleme anahtarı için PRF desteği vermedi. Face ID eklenmedi; parola kullanılmaya devam edecek.');
-const key=await deriveBioKey(first,kdfSalt),iv=bytes(12);const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:enc.encode('gunluk-v16-bio:'+accountId+':'+credId)},key,raw);
-const r=await db.from('gunluk_biometric_keys').insert({owner_id:accountId,credential_id:credId,label:(navigator.userAgent.includes('iPhone')?'iPhone':'Bu cihaz'),wrapped_key:{v:1,salt:to64(salt),kdfSalt:to64(kdfSalt),iv:to64(iv),ct:to64(ct)}});if(r.error)throw r.error;await loadBioChoices();loadPrivateSecurityReminder().catch(()=>{});return true}
-async function unlockWithBiometrics(){if(!bioEntries.length)await loadBioChoices();if(!bioEntries.length)throw Error('Önce kişisel parolanla Face ID etkinleştir.');const map={},allowed=[];for(const b of bioEntries){map[b.credential_id]={first:from64(b.wrapped_key.salt)};allowed.push({type:'public-key',id:un64url(b.credential_id)})}
-const result=await navigator.credentials.get({publicKey:{challenge:bytes(32),allowCredentials:allowed,userVerification:'required',timeout:60000,extensions:{prf:{evalByCredential:map}}}});
-const id=b64url(result.rawId);const record=bioEntries.find(b=>b.credential_id===id);if(!record)throw Error('Bu anahtar hesabına kayıtlı değil.');const first=result.getClientExtensionResults()?.prf?.results?.first;if(!first)throw Error('Bu cihaz Face ID ile şifre çözmeyi desteklemiyor. Kişisel parolanı kullan.');const w=record.wrapped_key;const key=await deriveBioKey(first,from64(w.kdfSalt));const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:from64(w.iv),additionalData:enc.encode('gunluk-v16-bio:'+accountId+':'+id)},key,from64(w.ct));privateKey=await crypto.subtle.importKey('pkcs8',plain,{name:'ECDH',namedCurve:'P-256'},false,['deriveBits']);await showWorkspace()}
-$('#enable-bio').onclick=async()=>{const b=$('#enable-bio');b.disabled=true;try{await registerBiometric();info('#biometric-status','Face ID / Touch ID kilidi bu hesap için etkinleştirildi.')}catch(e){info('#biometric-status',err(e),true)}finally{$('#bio-password').value='';b.disabled=false}};
-$('#unlock-biometric').onclick=async()=>{const b=$('#unlock-biometric');b.disabled=true;try{await unlockWithBiometrics()}catch(e){info('#unlock-status','Biyometrik kilit açılamadı: '+err(e),true)}finally{b.disabled=false}};
+async function deriveBioKey(prfOutput,kdfSalt){
+ const base=await crypto.subtle.importKey('raw',prfOutput,'HKDF',false,['deriveKey']);
+ return crypto.subtle.deriveKey({name:'HKDF',hash:'SHA-256',salt:kdfSalt,info:enc.encode('gunluk-v16-biometric-key')},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+function prfFirst(result){const r=result?.getClientExtensionResults?.()?.prf?.results?.first;return r&&(r.byteLength||r.length)?r:null}
+async function commitBioRecord(pending,first){
+ const key=await deriveBioKey(first,pending.kdfSalt),iv=bytes(12);
+ const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:enc.encode('gunluk-v16-bio:'+accountId+':'+pending.credId)},key,pending.raw);
+ // Roundtrip first, then save. A failing authenticator must never replace the good password key.
+ await crypto.subtle.decrypt({name:'AES-GCM',iv,additionalData:enc.encode('gunluk-v16-bio:'+accountId+':'+pending.credId)},key,ct);
+ const r=await db.from('gunluk_biometric_keys').insert({owner_id:accountId,credential_id:pending.credId,label:(navigator.userAgent.includes('iPhone')?'iPhone':'Bu cihaz'),wrapped_key:{v:1,salt:to64(pending.salt),kdfSalt:to64(pending.kdfSalt),iv:to64(iv),ct:to64(ct)}});
+ if(r.error)throw r.error;
+ await loadBioChoices();loadPrivateSecurityReminder().catch(()=>{});
+ return true;
+}
+$('#enable-bio').onclick=async()=>{
+ const b=$('#enable-bio');b.disabled=true;clearBioPending();
+ try{
+  if(!navigator.credentials?.create||!navigator.credentials?.get||!globalThis.PublicKeyCredential)throw Error('Bu tarayıcıda Face ID / Touch ID için WebAuthn kullanılamıyor.');
+  const pw=$('#bio-password').value;if(pw.length<12)throw Error('Kişisel parolanı gir (en az 12 karakter).');
+  const raw=await unwrapWithPassword(pw);
+  bioPending={raw:new Uint8Array(raw),accountId,revision:epoch,salt:bytes(32),kdfSalt:bytes(16)};
+  $('#bio-password').value='';visible('#finish-bio');info('#biometric-status','Parolan doğrulandı. Şimdi “Face ID / Touch ID kaydet” düğmesine dokun.');
+ }catch(e){info('#biometric-status',e?.name==='OperationError'?'Kişisel parola yanlış.':describeBioError(e),true);clearBioPending()}
+ finally{b.disabled=false;$('#bio-password').value=''}
+};
+$('#finish-bio').onclick=async()=>{
+ const pending=bioPending;if(!pending||pending.revision!==epoch||pending.accountId!==accountId){clearBioPending();return}
+ const b=$('#finish-bio');b.disabled=true;
+ try{
+  // Important: start the native prompt synchronously in the actual tap gesture.
+  const request=navigator.credentials.create({publicKey:{challenge:bytes(32),rp:{name:'Günlük'},user:{id:bytes(24),name:profile.username,displayName:profile.display_name},pubKeyCredParams:[{type:'public-key',alg:-7}],authenticatorSelection:{authenticatorAttachment:'platform',residentKey:'preferred',userVerification:'required'},attestation:'none',timeout:60000,extensions:{prf:{eval:{first:pending.salt}}}}});
+  const credential=await request;
+  if(!credential)throw Error('Biyometrik kayıt iptal edildi.');
+  if(pending.revision!==epoch)throw Error('Güvenlik kilidi açıldıktan sonra tekrar dene.');
+  pending.credId=b64url(credential.rawId);
+  const first=prfFirst(credential);
+  if(first){await commitBioRecord(pending,first);info('#biometric-status','Biyometrik giriş kaydedildi. Kilitleyip tekrar açarak deneyebilirsin.');clearBioPending()}
+  else{visible('#finish-bio',false);visible('#verify-bio');info('#biometric-status','Passkey oluşturuldu. Şimdi “Face ID ile doğrula ve bitir” düğmesine dokunarak güvenli anahtarı tamamla.');}
+ }catch(e){info('#biometric-status',describeBioError(e),true);clearBioPending()}
+ finally{b.disabled=false}
+};
+$('#verify-bio').onclick=async()=>{
+ const pending=bioPending;if(!pending?.credId||pending.revision!==epoch)return;
+ const b=$('#verify-bio');b.disabled=true;
+ try{
+  const promise=navigator.credentials.get({publicKey:{challenge:bytes(32),allowCredentials:[{type:'public-key',id:un64url(pending.credId)}],userVerification:'required',timeout:60000,extensions:{prf:{eval:{first:pending.salt}}}}});
+  const result=await promise;
+  if(b64url(result.rawId)!==pending.credId)throw Error('Farklı bir biyometrik anahtar seçildi.');
+  const first=prfFirst(result);
+  if(!first)throw Error('Bu tarayıcı WebAuthn PRF sonucunu vermiyor. Parolayla giriş güvenlidir. iOS güncellendikten sonra tekrar deneyebilirsin.');
+  if(pending.revision!==epoch)throw Error('Sohbet kilitlendi. Yeniden dene.');
+  await commitBioRecord(pending,first);
+  info('#biometric-status','Biyometrik giriş doğrulandı ve kaydedildi.');clearBioPending();
+ }catch(e){info('#biometric-status',describeBioError(e),true);clearBioPending()}
+ finally{b.disabled=false}
+};
+async function unlockWithBiometrics(){
+ if(!bioEntries.length)throw Error('Biyometrik kayıt henüz yüklenmedi. Parolayla açıp yeniden kaydet.');
+ if(!navigator.credentials?.get)throw Error('Bu tarayıcı biyometrik girişi desteklemiyor.');
+ let result,record,first;
+ // For a single saved passkey, Safari works more consistently with prf.eval.
+ if(bioEntries.length===1){
+  record=bioEntries[0];
+  const salt=from64(record.wrapped_key.salt);
+  const requestedPrf=bioCompatMode?{evalByCredential:{[record.credential_id]:{first:salt}}}:{eval:{first:salt}};
+  const request=navigator.credentials.get({publicKey:{challenge:bytes(32),allowCredentials:[{type:'public-key',id:un64url(record.credential_id)}],userVerification:'required',timeout:60000,extensions:{prf:requestedPrf}}});
+  result=await request;
+  if(!result||b64url(result.rawId)!==record.credential_id)throw Error('Kayıtlı biyometrik anahtar seçilmedi.');
+  first=prfFirst(result);
+ }else{
+  const map={},allowed=[];
+  for(const entry of bioEntries){map[entry.credential_id]={first:from64(entry.wrapped_key.salt)};allowed.push({type:'public-key',id:un64url(entry.credential_id)})}
+  const request=navigator.credentials.get({publicKey:{challenge:bytes(32),allowCredentials:allowed,userVerification:'required',timeout:60000,extensions:{prf:{evalByCredential:map}}}});
+  result=await request;
+  if(!result)throw Error('Biyometrik işlem iptal edildi.');
+  record=bioEntries.find(b=>b.credential_id===b64url(result.rawId));
+  if(!record)throw Error('Seçilen anahtar bu hesapta bulunamadı.');
+  first=prfFirst(result);
+ }
+ if(!first){bioCompatMode=!bioCompatMode;throw Error('Biyometrik doğrulandı ancak iPhone anahtar üretmedi (PRF). Bir kez daha deneyerek uyumluluk yöntemini kullanabilir veya kişisel parolanla açıp eski kaydı yenileyebilirsin.')}
+ bioCompatMode=false;
+ const w=record.wrapped_key,key=await deriveBioKey(first,from64(w.kdfSalt));
+ let plain;
+ try{plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:from64(w.iv),additionalData:enc.encode('gunluk-v16-bio:'+accountId+':'+record.credential_id)},key,from64(w.ct))}
+ catch(e){if(e?.name==='OperationError')throw Error('Biyometrik anahtar uyuşmuyor. Parolanla giriş yap, eski kaydı kaldırıp yeni kayıt oluştur.');throw e}
+ privateKey=await crypto.subtle.importKey('pkcs8',plain,{name:'ECDH',namedCurve:'P-256'},false,['deriveBits']);
+ await showWorkspace();
+}
+$('#unlock-biometric').onclick=async()=>{const b=$('#unlock-biometric');b.disabled=true;try{await unlockWithBiometrics()}catch(e){info('#unlock-status','Biyometrik giriş açılamadı: '+describeBioError(e),true)}finally{b.disabled=false}};
 async function loadSecurityPanel(){if(!unlocked||!accountId)return;const setting=$('#auto-lock-duration');setting.value=String(lockLimit());await Promise.allSettled([loadDevices(),loadBioChoices(),loadPrivateSecurityReminder()]);}
 $('#auto-lock-duration').onchange=()=>{const n=Number($('#auto-lock-duration').value);if([15,30,60,120,300].includes(n))try{localStorage.setItem('gunluk-idle-lock-v16',String(n))}catch{}activity()};
 async function loadDevices(){const r=await db.from('gunluk_trusted_devices').select('auth_uid,label,created_at,last_seen,revoked_at').eq('owner_id',accountId).order('created_at',{ascending:true});if(r.error)throw r.error;const list=$('#trusted-device-list');list.replaceChildren();for(const d of r.data||[]){const line=document.createElement('div');line.className='device-row';const label=document.createElement('div');const head=document.createElement('strong');head.textContent=d.label+(d.auth_uid===user.id?' (bu cihaz)':'');const stamp=document.createElement('span');stamp.textContent=d.revoked_at?'Erişim kaldırılmış':'Son işlem: '+new Date(d.last_seen||d.created_at).toLocaleDateString('tr-TR');label.append(head,stamp);line.append(label);if(d.auth_uid!==user.id&&!d.revoked_at){const btn=document.createElement('button');btn.type='button';btn.className='btn ghost small';btn.textContent='Kaldır';btn.onclick=async()=>{if(!confirm('Bu cihazın erişimini kaldırmak istediğine emin misin?'))return;btn.disabled=true;try{const res=await db.rpc('gunluk_revoke_device',{p_auth_uid:d.auth_uid});if(res.error)throw res.error;await loadDevices();info('#devices-status','Cihaz erişimi kaldırıldı.')}catch(e){info('#devices-status',err(e),true)}finally{btn.disabled=false}};line.append(btn)}list.append(line)}if(!r.data?.length){const div=document.createElement('p');div.className='hint';div.textContent='Kayıtlı cihaz bulunamadı.';list.append(div)}}
