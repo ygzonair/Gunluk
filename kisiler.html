@@ -98,7 +98,7 @@
 <div class="notice status hidden" id="chat-status" role="status"></div></div>
 </section>
 <div id="global-status" class="notice status hidden" role="alert"></div>
-<p class="bottom">Kişiler · v1.8.1</p>
+<p class="bottom">Kişiler · v1.8.2</p>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0" crossorigin="anonymous"></script>
 <script>
@@ -108,7 +108,7 @@ const URL_BASE='https://cegquyijjdvaccancagi.supabase.co';
 const PUBLIC_KEY='sb_publishable_LRlXW2BWPcZnaxhltFpUoA_2HZtkH6Z';
 const enc=new TextEncoder(),dec=new TextDecoder();
 let db=null,user=null,accountId=null,profile=null,privateKey=null,people=[],contacts=[],currentContact=null;
-let poll=null,channel=null,openTimer=null,openTick=null,activeOpen=null,openedButton=null,opening=false,unlocked=false,epoch=0,refreshing=false,contactRefreshing=false,lastActivity=Date.now(),idleWatcher=null,deviceWatcher=null,bioEntries=[],bioPending=null,bioCompatMode=false;
+let poll=null,channel=null,openTimer=null,openTick=null,activeOpen=null,activeOpenOwn=false,openedButton=null,opening=false,unlocked=false,epoch=0,refreshing=false,contactRefreshing=false,lastActivity=Date.now(),idleWatcher=null,deviceWatcher=null,bioEntries=[],bioPending=null,bioCompatMode=false;
 function visible(id,on=true){$(id).classList.toggle('hidden',!on)}
 function info(id,text,bad=false){const n=$(id);n.textContent=text;n.classList.remove('hidden','error');if(bad)n.classList.add('error')}
 function clearInfo(id){$(id).classList.add('hidden')}
@@ -138,8 +138,20 @@ function stopRealtime(){if(poll){clearInterval(poll);poll=null}if(channel&&db){d
 function dismissOpened(){
  if(openTimer){clearTimeout(openTimer);openTimer=null}
  if(openTick){clearInterval(openTick);openTick=null}
+ const ownMessage=activeOpenOwn;
  activeOpen=null;
- if(openedButton){openedButton.replaceChildren();openedButton.remove();openedButton=null}
+ activeOpenOwn=false;
+ if(openedButton){
+  if(ownMessage){
+   // A sent message remains unread for its recipient; lock the sender's preview again.
+   openedButton.classList.remove('open');
+   const preview=openedButton.querySelector('.bubble-text');
+   if(preview)preview.textContent='🔒 Gönderildi · Görmek için dokun';
+   openedButton.querySelector('.view-countdown')?.remove();
+   openedButton.disabled=false;
+  }else{openedButton.replaceChildren();openedButton.remove()}
+  openedButton=null;
+ }
 }
 function hideOpened(){dismissOpened();$('#chat-list').replaceChildren()}
 function closeConversation(){epoch++;hideOpened();opening=false;$('#message-input').value='';currentContact=null;clearInfo('#chat-status');visible('#conversation',false);visible('#workspace');refreshContacts();}
@@ -261,20 +273,39 @@ async function openConversation(peer){epoch++;hideOpened();opening=false;current
 $('#back-people').onclick=closeConversation;
 $('#verify-contact').onclick=async()=>{if(!currentContact)return;try{const id=await fingerprint(currentContact.public_jwk);const mine=await fingerprint(profile.public_jwk);info('#chat-status','Senin kodun: '+mine+' | '+currentContact.display_name+' kodu: '+id+'. Karşı tarafta bu iki kodun ters sırada aynı olduğunu doğrulayın.')}catch(e){info('#chat-status','Kod oluşturulamadı.',true)}};
 async function refreshMessages(){if(!currentContact||!unlocked||refreshing||opening||activeOpen||document.hidden)return;refreshing=true;const peer=currentContact,revision=epoch;try{const q='and(sender_id.eq.'+accountId+',recipient_id.eq.'+peer.id+'),and(sender_id.eq.'+peer.id+',recipient_id.eq.'+accountId+')';const {data,error}=await db.from('gunluk_direct_messages').select('id,sender_id,recipient_id,payload,created_at').or(q).order('created_at',{ascending:true}).limit(100);if(error)throw error;if(revision!==epoch||opening||activeOpen||currentContact?.id!==peer.id)return;
-const root=$('#chat-list');const bottom=root.scrollHeight-root.scrollTop-root.clientHeight<80;root.textContent='';if(!data?.length){const el=document.createElement('div');el.className='empty';el.textContent='Henüz mesaj yok. İlk mesajı gönder.';root.append(el)}for(const m of data||[]){const own=m.sender_id===accountId;const b=document.createElement('button');b.type='button';b.className='bubble'+(own?' mine':'');const span=document.createElement('span');span.textContent=own?'🔒 Gönderildi':'🔒 Okumak için dokun';const time=document.createElement('small');time.className='time';time.textContent=new Date(m.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});b.append(span,time);if(own){b.disabled=true;}else b.onclick=()=>readMessage(m,b,span);root.append(b)}if(bottom)root.scrollTop=root.scrollHeight;
+const root=$('#chat-list');const bottom=root.scrollHeight-root.scrollTop-root.clientHeight<80;root.textContent='';if(!data?.length){const el=document.createElement('div');el.className='empty';el.textContent='Henüz mesaj yok. İlk mesajı gönder.';root.append(el)}for(const m of data||[]){const own=m.sender_id===accountId;const b=document.createElement('button');b.type='button';b.className='bubble'+(own?' mine':'');const span=document.createElement('span');span.className='bubble-text';span.textContent=own?'🔒 Gönderildi · Görmek için dokun':'🔒 Okumak için dokun';const time=document.createElement('small');time.className='time';time.textContent=new Date(m.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});b.append(span,time);b.onclick=()=>readMessage(m,b,span);root.append(b)}if(bottom)root.scrollTop=root.scrollHeight;
 }catch(e){info('#chat-status','Mesajlar alınamadı: '+err(e),true)}finally{refreshing=false}}
 async function readMessage(m,button,text){
  if(opening||!unlocked||!privateKey||document.hidden)return;
  if(activeOpen===m.id)return;
- if(activeOpen)dismissOpened(); // No waiting: previous plaintext removed immediately.
- const revision=epoch;opening=true;button.disabled=true;try{const plain=await openPacket(m.payload,m.sender_id,m.recipient_id,currentContact);
-if(epoch!==revision||document.hidden||!privateKey)return;
-const {data,error}=await db.from('gunluk_direct_messages').delete().eq('id',m.id).eq('recipient_id',accountId).select('id');if(error)throw error;if(data?.length!==1)throw Error('Mesaj daha önce açılmış veya süresi dolmuş.');if(epoch!==revision||document.hidden||!privateKey)return;
-activeOpen=m.id;openedButton=button;button.classList.add('open');text.textContent=plain;const when=document.createElement('span');when.className='time';let remaining=10;when.textContent='10 saniye';button.append(when);
-openTick=setInterval(()=>{remaining=Math.max(0,remaining-1);when.textContent=remaining+' saniye';if(!remaining&&openTick){clearInterval(openTick);openTick=null}},1000);
-openTimer=setTimeout(()=>{dismissOpened();refreshMessages()},10000);
-clearInfo('#chat-status');
-}catch(e){if(epoch===revision)info('#chat-status',e?.name==='OperationError'?'Mesaj çözülemedi. Kişi anahtarı değişmiş olabilir.':err(e),true)}finally{button.disabled=false;if(epoch===revision){opening=false;if(!activeOpen)refreshMessages()}}}
+ if(activeOpen)dismissOpened(); // Previous plaintext is removed without waiting.
+ const revision=epoch,peer=currentContact,own=m.sender_id===accountId;
+ opening=true;button.disabled=true;
+ try{
+  if(own){
+   // A previously rendered sent bubble can be stale: do not reveal a message already consumed by its recipient.
+   const {data,error}=await db.from('gunluk_direct_messages').select('id').eq('id',m.id).eq('sender_id',accountId).eq('recipient_id',peer.id).maybeSingle();
+   if(error)throw error;
+   if(epoch!==revision||document.hidden||!privateKey)return;
+   if(!data){button.remove();throw Error('Mesaj karşı tarafça okunmuş veya süresi dolmuş.');}
+  }
+  const plain=await openPacket(m.payload,m.sender_id,m.recipient_id,peer);
+  if(epoch!==revision||document.hidden||!privateKey)return;
+  if(!own){
+   // Only the recipient consumes (deletes) the message, never its sender.
+   const {data,error}=await db.from('gunluk_direct_messages').delete().eq('id',m.id).eq('recipient_id',accountId).select('id');
+   if(error)throw error;
+   if(data?.length!==1)throw Error('Mesaj daha önce açılmış veya süresi dolmuş.');
+   if(epoch!==revision||document.hidden||!privateKey)return;
+  }
+  activeOpen=m.id;activeOpenOwn=own;openedButton=button;button.classList.add('open');text.textContent=plain;
+  const when=document.createElement('span');when.className='time view-countdown';let remaining=10;when.textContent='10 saniye';button.append(when);
+  openTick=setInterval(()=>{remaining=Math.max(0,remaining-1);when.textContent=remaining+' saniye';if(!remaining&&openTick){clearInterval(openTick);openTick=null}},1000);
+  openTimer=setTimeout(()=>{dismissOpened();refreshMessages()},10000);
+  clearInfo('#chat-status');
+ }catch(e){if(epoch===revision)info('#chat-status',e?.name==='OperationError'?'Mesaj çözülemedi. Kişi anahtarı değişmiş olabilir.':err(e),true)}
+ finally{button.disabled=false;if(epoch===revision){opening=false;if(!activeOpen)refreshMessages()}}
+}
 $('#send-form').onsubmit=async e=>{e.preventDefault();const b=$('#send-button');b.disabled=true;const peer=currentContact,revision=epoch;try{if(!peer||!privateKey)throw Error('Sohbet kilitli.');const content=$('#message-input').value.trim();if(!content)throw Error('Mesaj yaz.');const pkt=await seal(content,peer);if(epoch!==revision||!currentContact)throw Error('Konuşma kilitlendi.');const {error}=await db.from('gunluk_direct_messages').insert({sender_id:accountId,recipient_id:peer.id,payload:pkt});if(error)throw error;$('#message-input').value='';await refreshMessages();clearInfo('#chat-status');db.functions.invoke('gunluk-private-push',{body:{recipient_id:peer.id}}).catch(()=>{})}catch(e){info('#chat-status','Gönderilemedi: '+err(e),true)}finally{b.disabled=false}};
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&unlocked)lock()});window.addEventListener('pagehide',()=>{if(unlocked)lock()});
 

@@ -1,15 +1,18 @@
-# Günlük v1.8.1 — Parola karakter sınırı düzeltmesi
+# Günlük v1.8.2 — Gönderdiğim mesajı görüntüleme
 
-ZIP'i çıkartıp aşağıdaki dosyaları GitHub deponun ana dizinine yükle ve Commit changes yap.
+## Değişen dosyalar
+- `kisiler.html`
+- `sw.js` (önbellek sürümü `gunluk-v18-2`)
 
-- `kisiler.html`: Hesap oluşturma, parola değiştirme ve Face ID/Touch ID kaydı için minimum/maksimum parola karakter zorunluluğu yoktur. **Boş parola kabul edilmez.**
-- `chat.html`: Önceki ortak parolalı sohbet ekranındaki 12 karakter kontrolü kaldırıldı. Mevcut ortak parola aynen geçerlidir.
-- `sw.js`: PWA önbelleği v1.8.1 olarak yenilendi.
+## Değişiklik
+- Gönderdiğin mesajlar kilitli balon hâlindedir; dokununca içeriği 10 saniyeliğine açılır.
+- Gönderenin mesajı görüntülemesi sunucudaki mesajı silmez. Alıcı okuduğunda silinir.
+- Gönderenin 10 saniyelik önizlemesi bitince balon yeniden kilitlenir; alıcı okumadıysa tekrar açılabilir.
+- Bir mesaj açıkken diğerine dokunulursa önceki açık metin hemen temizlenir.
+- Alıcı mesajları açınca eskisi gibi tek kullanımlık olarak silinir.
+- Gönderen eski bir mesaj balonuna dokunduğunda sunucuya yeniden bakılır: alıcı okumuşsa içerik gösterilmez.
 
-Kullanıcı kimliği, şifreleme algoritması, anahtarlar ve mevcut sohbet verileri değiştirilmez.
+## Kurulum
+ZIP içindeki `kisiler.html` ve `sw.js` dosyalarını `ygzonair/Gunluk` deposunun `main` köküne yükleyin. Dosyaların üzerine yazılmasını onaylayıp Commit changes yapın.
 
-**Güvenlik:** Kısa parola kullanımı mümkün fakat tahmin edilmesi kolaydır. Uzun ve benzersiz bir parola önerilir, zorunlu değildir.
-
-GitHub: https://github.com/ygzonair/Gunluk/upload/main
-
-ChatGPT sohbet başlığını uygulama menüsünden kullanıcı değiştirebilir; Günlük dosyaları ChatGPT başlığını değiştirmez.
+Hiçbir veritabanı değişikliği yapılmaz. Mevcut hesap, anahtarlar ve mesajlar korunur. Ekran dışında önbellek değişikliği için ana ekrandaki uygulamayı bir kez kapatıp açın; oturumu veya uygulama verilerini silmeyin.
