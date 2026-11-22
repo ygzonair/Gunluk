@@ -1,4 +1,4 @@
-const CACHE='gunluk-v20';
+const CACHE='gunluk-v21-minimal';
 const ASSETS=['./', './index.html', './chat.html', './kisiler.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './install-diary.html', './manifest-diary.webmanifest', './icon-diary-192.png', './icon-diary-512.png', './install-calendar.html', './manifest-calendar.webmanifest', './icon-calendar-192.png', './icon-calendar-512.png', './install-calculator.html', './manifest-calculator.webmanifest', './icon-calculator-192.png', './icon-calculator-512.png', './install-loan.html', './manifest-loan.webmanifest', './icon-loan-192.png', './icon-loan-512.png', './install-sudoku.html', './manifest-sudoku.webmanifest', './icon-sudoku-192.png', './icon-sudoku-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));

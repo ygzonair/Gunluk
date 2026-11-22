@@ -65,29 +65,69 @@ body.calc-active #app-header{color:#f8faf9}
 .install-howto{margin-top:14px;padding:12px 13px;background:#eff4f0;border-radius:10px;color:#456554;font-size:12px;line-height:1.65}
 .install-howto strong{color:#234835}
 .install-risk{margin:13px 0 0;background:#fff9ec;border:1px solid #e9dfc1;padding:11px 12px;border-radius:9px;color:#785c22;font-size:11px;line-height:1.6}
+
+/* Günlük 2.1 — softened, focused ordinary home; existing 5 tools untouched. */
+#home-view.quiet-home{min-height:calc(100dvh - 205px);padding:1px 0 70px;position:relative}
+#home-view .quiet-heading{padding:14px 3px 16px;position:relative}
+#home-view .quiet-leaf{position:absolute;right:10px;top:5px;color:#b4c3a3;font:italic 76px Georgia,serif;opacity:.47;transform:rotate(-18deg);pointer-events:none}
+#home-view .quiet-date{margin:0 0 12px;font-size:12px;letter-spacing:.03em;color:#978f85}
+#home-view .quiet-heading h1{font:600 40px Georgia,'Times New Roman',serif;line-height:1.12;color:#3b4337;letter-spacing:-1px;margin:0 0 8px}
+#home-view .quiet-description{color:#8e9286;font-size:14px;margin:0 0 2px}
+#home-view .quiet-search{display:flex;align-items:center;gap:11px;width:100%;height:53px;background:#eeeae5;border:1px solid #eae5dd;padding:0 17px;margin:20px 0 25px;border-radius:20px;color:#888f83}
+#home-view .quiet-search span{font-size:27px}
+#home-view .quiet-search input{min-width:0;width:100%;font-size:15px;outline:0;color:#3f463b;background:transparent;border:0}
+#home-view .quiet-search input::placeholder{color:#9b9c95}
+#home-view .quiet-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-bottom:33px}
+#home-view .quiet-action{position:relative;min-height:140px;border:1px solid #e4e6da;border-radius:24px;padding:21px 20px;background:#e9eee2;color:#3c4d3d;display:flex;align-items:flex-start;flex-direction:column;gap:16px;text-align:left;font-size:17px;font-weight:660;box-shadow:0 8px 20px #77785e0a}
+#home-view .quiet-action.docs{background:#f3ebe3;border-color:#eee2d5;color:#685d4c}
+#home-view .quiet-action-icon{font-size:22px;display:grid;place-items:center;background:#dfe8d6;width:41px;height:41px;border-radius:14px;font-weight:400}
+#home-view .quiet-action.docs .quiet-action-icon{background:#ebe1d4}
+#home-view .quiet-arrow{position:absolute;bottom:15px;right:18px;font-size:27px;font-weight:300;opacity:.6}
+#home-view .quiet-section-head{display:flex;align-items:end;justify-content:space-between;gap:10px;margin:0 3px 16px}
+#home-view .quiet-section-head h2{font:600 24px Georgia,'Times New Roman',serif;color:#40473c;letter-spacing:-.35px}
+#home-view .quiet-section-head span{font-size:12px;color:#a7a39c}
+#home-view .quiet-recent{background:transparent}
+#home-view .quiet-note-row{width:100%;display:flex;align-items:center;gap:13px;text-align:left;background:transparent;border:0;border-bottom:1px solid #ebe8e2;min-height:59px;padding:9px 6px;color:#53584f;font-size:14px}
+#home-view .quiet-note-row span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#home-view .quiet-note-row:last-child{border-bottom:0}
+#home-view .quiet-note-icon{width:37px;height:37px;flex:0 0 37px;display:grid;place-items:center;border-radius:12px;background:#e9ecdf;color:#71806c;font-size:19px}
+#home-view .quiet-empty{margin:0;padding:16px 5px;color:#9a978f;line-height:1.6;font-size:13px}
+#home-view .quiet-new{position:fixed;z-index:4;bottom:92px;right:max(22px,calc((100vw - 480px)/2));width:59px;height:59px;border-radius:50%;background:#82967a;color:white;border:0;box-shadow:0 10px 23px #62785a33;font-size:35px;line-height:1}
+body:has(#home-view:not(.hide)) #app-header{margin-bottom:16px}
+body:has(#home-view:not(.hide)) .app{background:#faf9f6}
+body:has(#home-view:not(.hide)) #app-header .mark{background:#dfe6d7;color:#687d64;border-radius:12px;transform:none}
+body:has(#home-view:not(.hide)) #app-header .brand-btn{font:600 25px Georgia,serif;color:#445142;letter-spacing:-.6px}
+body:has(#home-view:not(.hide)) #app-header .header-icon{border-color:#e9e6de;background:#f3f1ed;color:#6e7c69;box-shadow:none;border-radius:15px}
+body:has(#home-view:not(.hide)) #navbar{grid-template-columns:repeat(3,1fr);border-top:1px solid #e8e6df;background:#fbfaf7f0}
+body:has(#home-view:not(.hide)) #navbar button.active{color:#6b806a}
+body:has(#home-view:not(.hide)) #navbar button{color:#92948c}
+@media(max-width:375px){#home-view .quiet-action{padding:15px;min-height:122px}#home-view .quiet-heading h1{font-size:36px}}
 </style>
 </head>
 <body>
 <div class="app">
 <header class="topbar" id="app-header">
   <div class="logo"><span class="mark" aria-hidden="true" id="app-brand-mark">G</span><button id="brand" class="brand-btn" aria-label="Ana sayfa">Günlük</button></div>
-  <div class="header-actions"><button id="settings-shortcut" type="button" class="header-icon" aria-label="Ayarlar">⚙</button><button id="secret-hold" type="button" class="header-icon" aria-label="Özel alana girmek için 1,5 saniye basılı tut">◇</button></div>
+  <div class="header-actions"><button id="settings-shortcut" type="button" class="header-icon" aria-label="Ayarlar">⚙</button><button id="secret-hold" type="button" class="header-icon" aria-label="Basılı tut">◇</button></div>
 </header>
 <section id="mode-screen" class="mode-screen hide" aria-label="Seçili araç"><div id="mode-content"></div></section>
 <main id="app-main">
-<section id="home-view">
-  <div class="hero"><small>KİŞİSEL ORGANİZASYON</small><h1>Gününü planla.<br>İşlerini düzenle.</h1><p id="hero-date">Bugünün özeti</p></div>
-  <div class="section"><h2>Hızlı işlemler</h2><small>GÜNLÜK ARAÇLAR</small></div>
-  <div class="shortcut-grid">
-    <button class="shortcut primary" data-go="docs"><span class="symbol">▤</span><span><strong>Belgeler</strong><small>6 profesyonel şablon</small></span></button>
-    <button class="shortcut" data-go="notes"><span class="symbol">✎</span><span><strong>Notlarım</strong><small>Fikirler ve yapılacaklar</small></span></button>
-    <button class="shortcut" data-go="docs"><span class="symbol">▦</span><span><strong>İş planı</strong><small>Plan ve kontrol listesi</small></span></button>
-    <button class="shortcut" data-go="settings"><span class="symbol">⚙</span><span><strong>Ayarlar</strong><small>Görünüm ve simge</small></span></button>
+<section id="home-view" class="quiet-home">
+  <div class="quiet-heading">
+    <span class="quiet-leaf" aria-hidden="true">❧</span>
+    <p id="hero-date" class="quiet-date">Bugün</p>
+    <h1>Bugün</h1>
+    <p class="quiet-description">Gününe küçük bir not bırak.</p>
   </div>
-  <div class="section"><h2>Bugünkü notlar</h2><small id="note-count">0 NOT</small></div>
-  <div class="panel cardpad"><div id="home-notes"></div><button class="button secondary small full" data-go="notes">Notlara git →</button></div>
-  <div class="section"><h2>Öne çıkan belgeler</h2><small>ÖRNEK ŞABLONLAR</small></div>
-  <div id="home-docs" class="template-grid"></div>
+  <label class="quiet-search"><span aria-hidden="true">⌕</span><input id="home-search" type="search" autocomplete="off" placeholder="Notlarda ara" aria-label="Notlarda ara"></label>
+  <div class="quiet-actions">
+    <button class="quiet-action notes" type="button" data-go="notes"><span class="quiet-action-icon" aria-hidden="true">▤</span><span>Notlar</span><span class="quiet-arrow" aria-hidden="true">›</span></button>
+    <button class="quiet-action docs" type="button" data-go="docs"><span class="quiet-action-icon" aria-hidden="true">▦</span><span>Belgeler</span><span class="quiet-arrow" aria-hidden="true">›</span></button>
+  </div>
+  <div class="quiet-section-head"><h2>Son notlar</h2><span id="note-count"></span></div>
+  <div id="home-notes" class="quiet-recent"></div>
+  <button class="quiet-new" data-go="notes" type="button" aria-label="Yeni not">＋</button>
+  <div id="home-docs" class="hide" aria-hidden="true"></div>
 </section>
 <section id="docs-view" class="hide">
   <div class="kicker">BELGE YÖNETİMİ</div><h1>Belgeler</h1><p class="sub">Toplantı, bütçe, operasyon ve planlama için düzenlenebilir PDF şablonları.</p>
@@ -130,7 +170,7 @@ body.calc-active #app-header{color:#f8faf9}
 </section>
 <section id="private-view" class="hide">
   <div class="backrow"><button id="leave-private" class="back" aria-label="Günlük'e dön">‹</button><div><div class="kicker">BELGE İŞLEMLERİ</div><h2>Belgelerim</h2></div></div>
-  <div class="seg"><button id="tab-create" class="active" type="button">Yeni PDF</button><button id="tab-open" type="button">PDF Aç</button></div><a href="./kisiler.html" style="display:block;text-align:center;margin:12px 0 18px;padding:13px;border:1px solid #24a07c;border-radius:9px;color:#144d3d;background:#eaf3ee;text-decoration:none;font-size:14px;font-weight:750">◉ &nbsp; Kişiler — Özel mesajlaşma</a>
+  <div class="seg"><button id="tab-create" class="active" type="button">Yeni PDF</button><button id="tab-open" type="button">PDF Aç</button></div><a href="./kisiler.html" style="display:block;text-align:center;margin:12px 0 18px;padding:13px;border:1px solid #24a07c;border-radius:9px;color:#144d3d;background:#eaf3ee;text-decoration:none;font-size:14px;font-weight:750">Kişiler</a>
   <div id="secret-create" class="secret-block">
     <div class="field"><label for="private-style">Belge şablonu</label><select id="private-style"></select></div>
     <div id="private-fields"></div>
@@ -151,7 +191,7 @@ body.calc-active #app-header{color:#f8faf9}
   <p class="footer">Belgeler · v1.7</p>
 </section>
 </main>
-<nav id="navbar" class="nav" aria-label="Alt menü"><button data-go="home" class="active"><b>⌂</b>Özet</button><button data-go="docs"><b>▤</b>Belgeler</button><button data-go="notes"><b>✎</b>Notlar</button><button data-go="settings"><b>⚙</b>Ayarlar</button></nav>
+<nav id="navbar" class="nav" aria-label="Alt menü"><button data-go="home" class="active"><b>⌂</b>Bugün</button><button data-go="notes"><b>✎</b>Notlar</button><button data-go="settings"><b>⚙</b>Ayarlar</button></nav>
 </div>
 <script>
 'use strict';
@@ -210,8 +250,8 @@ function drawRecent(){const root=$('#recent-docs');root.textContent='';if(!recen
 let notes=[];try{const saved=JSON.parse(localStorage.getItem('gunluk-tekdosya-notlar')||'[]');if(Array.isArray(saved))notes=saved.filter(n=>n && typeof n.text==='string').slice(0,150);}catch{}
 function saveNotes(){try{localStorage.setItem('gunluk-tekdosya-notlar',JSON.stringify(notes));}catch{}}
 function drawNotes(){const el=$('#all-notes');el.textContent='';$('#all-note-count').textContent=notes.length+' NOT';if(!notes.length){el.innerHTML='<p class="sub">Henüz not oluşturmadın.</p>';return;}notes.forEach(n=>{const row=document.createElement('div');row.className='note-item'+(n.done?' done':'');const b=document.createElement('button');b.className='tick';b.textContent=n.done?'✓':'';b.title='Tamamla';b.onclick=()=>{n.done=!n.done;saveNotes();drawNotes();drawHomeNotes()};const txt=document.createElement('div');txt.className='txt';txt.textContent=n.text;const del=document.createElement('button');del.className='tinydelete';del.textContent='×';del.title='Sil';del.onclick=()=>{notes=notes.filter(x=>x.id!==n.id);saveNotes();drawNotes();drawHomeNotes()};row.append(b,txt,del);el.append(row)});}
-function drawHomeNotes(){const el=$('#home-notes');el.textContent='';$('#note-count').textContent=notes.length+' NOT';const subset=notes.filter(n=>!n.done).slice(0,2);if(!subset.length){el.innerHTML='<p class="sub" style="margin-bottom:13px">Henüz açık notun bulunmuyor.</p>';return;}subset.forEach(n=>{const p=document.createElement('p');p.style.cssText='font-size:13px;margin:0 0 11px';p.textContent='□  '+n.text.slice(0,110);el.append(p)});}
-$('#note-form').onsubmit=e=>{e.preventDefault();let txt=$('#new-note').value.trim();if(!txt||notes.length>=150)return;notes.unshift({id:crypto.randomUUID?.()||Date.now().toString(),text:txt,category:'note',done:false});$('#new-note').value='';saveNotes();drawNotes();drawHomeNotes()};drawHomeNotes();drawRecent();
+function drawHomeNotes(){const el=$('#home-notes');el.textContent='';const q=($('#home-search')?.value||'').trim().toLocaleLowerCase('tr-TR');const subset=notes.filter(n=>!n.done&&(!q||n.text.toLocaleLowerCase('tr-TR').includes(q))).slice(0,3);$('#note-count').textContent=notes.length?notes.length+' not':'';if(!subset.length){const p=document.createElement('p');p.className='quiet-empty';p.textContent=q?'Eşleşen not bulunamadı.':'Henüz not yok. Küçük bir notla başlayabilirsin.';el.append(p);return;}subset.forEach(n=>{const row=document.createElement('button');row.type='button';row.className='quiet-note-row';const dot=document.createElement('span');dot.className='quiet-note-icon';dot.textContent='✎';dot.setAttribute('aria-hidden','true');const label=document.createElement('span');label.textContent=n.text.slice(0,105);row.append(dot,label);row.onclick=()=>route('notes');el.append(row)});}
+$('#note-form').onsubmit=e=>{e.preventDefault();let txt=$('#new-note').value.trim();if(!txt||notes.length>=150)return;notes.unshift({id:crypto.randomUUID?.()||Date.now().toString(),text:txt,category:'note',done:false});$('#new-note').value='';saveNotes();drawNotes();drawHomeNotes()};drawHomeNotes();drawRecent();$('#home-search').addEventListener('input',drawHomeNotes);
 // PDF drawing: canvas raster page provides consistent UTF-8 Turkish rendering on iOS/Android.
 const PW=1240,PH=1754;
 function drawPdfPage(template,values){const cv=document.createElement('canvas');cv.width=PW;cv.height=PH;const ctx=cv.getContext('2d');const W=PW,H=PH;ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
