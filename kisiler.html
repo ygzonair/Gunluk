@@ -260,7 +260,7 @@ body:has(#workspace:not(.hidden)) .shell>.bottom{display:none}
  </div>
 </section>
 <div id="global-status" class="notice status hidden" role="alert"></div>
-<p class="bottom">Günlük · v2.1</p>
+<p class="bottom">Günlük · v2.2.1</p>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0" crossorigin="anonymous"></script>
 <script>
@@ -272,6 +272,9 @@ const enc=new TextEncoder(),dec=new TextDecoder();
 let db=null,user=null,accountId=null,profile=null,privateKey=null,people=[],contacts=[],currentContact=null;
 let poll=null,channel=null,openTimer=null,openTick=null,activeOpen=null,activeOpenOwn=false,openedButton=null,opening=false,unlocked=false,epoch=0,refreshing=false,contactRefreshing=false,lastActivity=Date.now(),idleWatcher=null,deviceWatcher=null,bioEntries=[],bioPending=null,bioCompatMode=false;
 let customPins=[],pinRotation=0,pendingSnippet='',pendingPhoto=null,sendingV20=false,editingPin=-1;
+// iOS/Android photo choosers may background the browser briefly. Grant ONLY that native picker a bounded pause.
+let photoPickerActive=false,photoPickerStarted=0,photoPickerTimer=null,photoPickerReturnTimer=null;
+const PHOTO_PICKER_GRACE_MS=120000;
 const PHOTO_MARK='GUNLUK_2_0_PHOTO_JPEG_BASE64:';
 function visible(id,on=true){$(id).classList.toggle('hidden',!on)}
 function info(id,text,bad=false){const n=$(id);n.textContent=text;n.classList.remove('hidden','error');if(bad)n.classList.add('error')}
@@ -322,10 +325,10 @@ function hideOpened(){dismissOpened();$('#chat-list').replaceChildren()}
 function closeConversation(){resetV20Chat();epoch++;hideOpened();opening=false;$('#message-input').value='';currentContact=null;clearInfo('#chat-status');visible('#conversation',false);visible('#workspace');refreshContacts();}
 function activity(){lastActivity=Date.now()}
 function lockLimit(){let x=30;try{x=Number(localStorage.getItem('gunluk-idle-lock-v16')||'30')}catch{}return [15,30,60,120,300].includes(x)?x:30}
-function beginSafetyWatch(){if(idleWatcher)clearInterval(idleWatcher);lastActivity=Date.now();idleWatcher=setInterval(()=>{if(unlocked&&Date.now()-lastActivity>lockLimit()*1000)lock()},1000);if(deviceWatcher)clearInterval(deviceWatcher);deviceWatcher=setInterval(async()=>{if(!unlocked||!db||!user)return;try{const r=await db.from('gunluk_trusted_devices').select('owner_id').eq('auth_uid',user.id).maybeSingle();if(r.error||r.data?.owner_id!==accountId){lock();info('#unlock-status','Bu cihazın erişimi kaldırılmış. Yeniden oturum açman gerekebilir.',true)}}catch{}},45000)}
+function beginSafetyWatch(){if(idleWatcher)clearInterval(idleWatcher);lastActivity=Date.now();idleWatcher=setInterval(()=>{if(!unlocked)return;if(photoPickerGraceActive())return;if(Date.now()-lastActivity>lockLimit()*1000)lock()},1000);if(deviceWatcher)clearInterval(deviceWatcher);deviceWatcher=setInterval(async()=>{if(!unlocked||!db||!user)return;try{const r=await db.from('gunluk_trusted_devices').select('owner_id').eq('auth_uid',user.id).maybeSingle();if(r.error||r.data?.owner_id!==accountId){lock();info('#unlock-status','Bu cihazın erişimi kaldırılmış. Yeniden oturum açman gerekebilir.',true)}}catch{}},45000)}
 for(const ev of ['pointerdown','keydown','touchstart'])document.addEventListener(ev,activity,{passive:true,capture:true});
 
-function lock(){resetV20Chat();epoch++;opening=false;clearBioPending();stopRealtime();hideOpened();if(idleWatcher){clearInterval(idleWatcher);idleWatcher=null}if(deviceWatcher){clearInterval(deviceWatcher);deviceWatcher=null}$('#message-input').value='';$('#bio-password').value='';$('#recovery-code-view').textContent='';visible('#recovery-output',false);privateKey=null;currentContact=null;renderLock()}
+function lock(){endPhotoPicker();resetV20Chat();epoch++;opening=false;clearBioPending();stopRealtime();hideOpened();if(idleWatcher){clearInterval(idleWatcher);idleWatcher=null}if(deviceWatcher){clearInterval(deviceWatcher);deviceWatcher=null}$('#message-input').value='';$('#bio-password').value='';$('#recovery-code-view').textContent='';visible('#recovery-output',false);privateKey=null;currentContact=null;renderLock()}
 $('#lock-now').onclick=lock;$('#lock-conversation').onclick=lock;
 $('#register-form').onsubmit=async e=>{e.preventDefault();const b=$('#create-account');b.disabled=true;try{
 const handle=normHandle($('#new-handle').value),display=safeName($('#new-display').value),pass=$('#new-password').value;
@@ -537,7 +540,40 @@ async function sendV20Message(content,kind='text'){
  }finally{sendingV20=false;$('#send-button').disabled=false;$('#photo-send').disabled=false;refreshMessages().catch(()=>{});}
 }
 $('#send-form').onsubmit=async e=>{e.preventDefault();try{const v=$('#message-input').value.trim();if(!v)throw Error('Mesaj yaz.');await sendV20Message(v,'text');}catch(e){info('#chat-status','Gönderilemedi: '+err(e),true)}};
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&unlocked)lock()});window.addEventListener('pagehide',()=>{if(unlocked)lock()});
+function photoPickerGraceActive(){return photoPickerActive&&photoPickerStarted>0&&Date.now()-photoPickerStarted<PHOTO_PICKER_GRACE_MS;}
+function endPhotoPicker(){
+ photoPickerActive=false;photoPickerStarted=0;
+ if(photoPickerTimer){clearTimeout(photoPickerTimer);photoPickerTimer=null;}
+ if(photoPickerReturnTimer){clearTimeout(photoPickerReturnTimer);photoPickerReturnTimer=null;}
+ activity();
+}
+function beginPhotoPicker(){
+ if(!unlocked||!currentContact)return false;
+ endPhotoPicker();photoPickerActive=true;photoPickerStarted=Date.now();
+ photoPickerTimer=setTimeout(()=>{
+  if(!photoPickerActive)return;
+  // A native picker must not turn into an unlimited background unlock.
+  const wasHidden=document.hidden;endPhotoPicker();if(wasHidden&&unlocked)lock();
+ },PHOTO_PICKER_GRACE_MS);
+ return true;
+}
+function photoPickerReturned(){
+ if(!photoPickerActive)return;
+ if(!photoPickerGraceActive()){
+  endPhotoPicker();if(unlocked)lock();return;
+ }
+ activity();
+ if(photoPickerReturnTimer)clearTimeout(photoPickerReturnTimer);
+ // The file 'change' event can arrive AFTER focus/visibility returns.
+ photoPickerReturnTimer=setTimeout(()=>{if(photoPickerActive&&!document.hidden)endPhotoPicker();},1800);
+}
+document.addEventListener('visibilitychange',()=>{
+ if(document.hidden){if(unlocked&&!photoPickerGraceActive())lock();return;}
+ photoPickerReturned();
+});
+window.addEventListener('focus',photoPickerReturned);
+window.addEventListener('pagehide',()=>{if(unlocked&&!photoPickerGraceActive())lock()});
+window.addEventListener('pageshow',e=>{if(e.persisted&&unlocked)lock();else photoPickerReturned()});
 
 function b64url(buffer){return to64(buffer).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
 function un64url(str){return from64(str.replace(/-/g,'+').replace(/_/g,'/')+'='.repeat((4-str.length%4)%4))}
@@ -699,7 +735,7 @@ const CHAT_THEMES=['night','rain','paper','minimal'];
 function activePinKey(){return 'gunluk-v20-pins:'+accountId;}
 function readChatTheme(id){try{const v=localStorage.getItem('gunluk-v20-theme:'+accountId+':'+id);return CHAT_THEMES.includes(v)?v:'night';}catch{return 'night';}}
 function setChatTheme(theme,save=true){if(!CHAT_THEMES.includes(theme))theme='night';$('#conversation').dataset.theme=theme;for(const b of document.querySelectorAll('[data-theme-choice]'))b.classList.toggle('selected',b.dataset.themeChoice===theme);if(save&&currentContact)try{localStorage.setItem('gunluk-v20-theme:'+accountId+':'+currentContact.id,theme)}catch{}}
-function resetV20Chat(){document.body.classList.remove('chat-active');clearPendingPhoto();$('#starter-sheet').classList.add('hidden');$('#chat-theme-choices').classList.add('hidden');}
+function resetV20Chat(){endPhotoPicker();document.body.classList.remove('chat-active');clearPendingPhoto();$('#starter-sheet').classList.add('hidden');$('#chat-theme-choices').classList.add('hidden');}
 async function initV20Workspace(){
  pinRotation=Number(crypto.getRandomValues(new Uint8Array(1))[0])%DEFAULT_PINS.length;
  customPins=[];
@@ -769,8 +805,12 @@ async function preparePhoto(file){
  if(!blob||blob.size>350000)throw Error('Fotoğraf 350 KB sınırına küçültülemedi. Başka fotoğraf dene.');
  return {base64:to64(await blob.arrayBuffer()),bytes:blob.size};
 }
-$('#photo-trigger').onclick=()=>$('#photo-input').click();
-$('#photo-input').onchange=async()=>{const file=$('#photo-input').files?.[0];if(!file)return;try{
+$('#photo-trigger').onclick=()=>{
+ if(!beginPhotoPicker())return;
+ try{$('#photo-input').click()}catch(e){endPhotoPicker();info('#chat-status','Fotoğraf seçici açılamadı: '+err(e),true)}
+};
+$('#photo-input').addEventListener('cancel',endPhotoPicker);
+$('#photo-input').onchange=async()=>{const file=$('#photo-input').files?.[0];endPhotoPicker();if(!file)return;try{
  const value=await preparePhoto(file);if(!unlocked||!currentContact)return;
  pendingPhoto=value;$('#photo-preview-img').src='data:image/jpeg;base64,'+value.base64;
  visible('#photo-preview');$('#starter-sheet').classList.add('hidden');
