@@ -260,7 +260,7 @@ body:has(#workspace:not(.hidden)) .shell>.bottom{display:none}
  </div>
 </section>
 <div id="global-status" class="notice status hidden" role="alert"></div>
-<p class="bottom">Günlük · v2.2.1</p>
+<p class="bottom">Günlük · v2.2.2</p>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0" crossorigin="anonymous"></script>
 <script>
@@ -449,7 +449,7 @@ async function refreshMessages(){
   if(error)throw error;
   if(revision!==epoch||opening||activeOpen||currentContact?.id!==peer.id)return;
   const delivered=(data||[]).filter(m=>m.recipient_id===accountId).map(m=>m.id);
-  if(delivered.length)db.rpc('gunluk_mark_delivered',{p_ids:delivered}).catch(()=>{});
+  if(delivered.length)void Promise.resolve(db.rpc('gunluk_mark_delivered',{p_ids:delivered})).catch(()=>{});
   // Receipts store no content and remain briefly visible after a message is consumed.
   let receipts=[];
   const rr=await db.from('gunluk_message_receipts').select('id,created_at,delivered_at,opened_at').eq('sender_id',accountId).eq('recipient_id',peer.id).order('created_at',{ascending:false}).limit(80);
