@@ -147,6 +147,25 @@ body:has(#workspace:not(.hidden)) .shell>.bottom{display:none}
 #workspace button:active{transform:scale(.99)}
 @media (max-width:375px){body:has(#workspace:not(.hidden)):not(.chat-active) .shell{padding-left:15px;padding-right:15px}#workspace .workspace-bottom-nav{padding-left:10px;padding-right:10px}}
 @media (prefers-reduced-motion:reduce){#workspace *{animation:none!important;transition:none!important}}
+
+/* Günlük 3.0 — expression drawer */
+#starter-sheet.g3-drawer{display:block;max-height:min(300px,42dvh);overflow:auto;padding:9px 0;overscroll-behavior:contain}
+.g3-tabs{display:flex;gap:5px;overflow-x:auto;padding:2px 0 8px;position:sticky;top:0;background:var(--chat-bg);z-index:1}
+#starter-sheet .g3-tabs button{white-space:nowrap;padding:8px 11px;border-radius:18px}
+#starter-sheet .g3-tabs button[aria-pressed=true]{background:var(--chat-accent);color:var(--chat-bg)}
+.g3-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+#starter-sheet .g3-grid button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:5px 1px;text-align:center;font-size:10px;min-width:0}
+.g3-art{display:inline-block;flex-shrink:0;width:48px;height:48px;border-radius:12px;background-image:url(./gunluk-emoji-sprite.webp);background-size:400% 300%;background-position:var(--g3-x) var(--g3-y);background-repeat:no-repeat}
+.g3-open{display:flex;align-items:center;flex-direction:column;gap:7px;text-align:center;padding:5px;white-space:pre-wrap;overflow-wrap:anywhere}
+.g3-open .g3-art{width:88px;height:88px;border-radius:20px;animation:g3-heart .65s cubic-bezier(.22,.7,.3,1) both}
+.g3-open.g3-effect{border-radius:14px;padding:10px;background:linear-gradient(135deg,#70283b,#422034);color:#ffe4e5}
+.g3-open.g3-effect .g3-art{width:65px;height:65px}
+.g3-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.g3-caption{color:var(--chat-muted);font-size:11px;margin:3px 0 8px}
+#starter-trigger{color:#d98b9c!important}
+@keyframes g3-heart{0%{opacity:0;transform:scale(.6)}65%{opacity:1;transform:scale(1.09)}100%{opacity:1;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.g3-open .g3-art{animation:none}}
+
 </style>
 </head>
 <body>
@@ -252,15 +271,15 @@ body:has(#workspace:not(.hidden)) .shell>.bottom{display:none}
  <div class="chat-pin-rail" id="chat-pin-rail" aria-label="Mesaja ilham veren küçük notlar"></div>
  <div class="chat-stream chatbox" id="chat-list" aria-label="Mesajlar"></div>
  <div class="chat-compose-panel">
-  <div id="starter-sheet" class="starter-sheet hidden" aria-label="Konuşma başlatıcıları"></div>
+  <div id="starter-sheet" class="starter-sheet g3-drawer hidden" aria-label="Konuşma başlatıcıları"></div>
   <div id="photo-preview" class="photo-preview hidden"><img id="photo-preview-img" alt="Gönderilecek fotoğraf önizlemesi"><div class="photo-actions"><span style="font-size:12px;color:var(--chat-muted)">Tek kullanımlık şifreli fotoğraf</span><button type="button" id="photo-send">Fotoğrafı gönder</button><button type="button" id="photo-cancel">Vazgeç</button></div></div>
-  <form id="send-form"><div class="compose"><button id="starter-trigger" type="button" aria-label="Konuşma başlatıcıları" title="Konuşma başlatıcıları">✦</button><button id="photo-trigger" type="button" aria-label="Tek kullanımlık fotoğraf" title="Fotoğraf">＋</button><input id="message-input" type="text" maxlength="1900" autocomplete="off" placeholder="Mesajını yaz…" required><button class="send" type="submit" id="send-button" aria-label="Mesaj gönder">➤</button></div></form>
+  <form id="send-form"><div class="compose"><button id="starter-trigger" type="button" aria-label="İfadeler ve sohbet kartları" title="İfadeler ve sohbet kartları" aria-expanded="false">♡</button><button id="photo-trigger" type="button" aria-label="Tek kullanımlık fotoğraf" title="Fotoğraf">＋</button><input id="message-input" type="text" maxlength="1900" autocomplete="off" placeholder="Mesajını yaz…" required><button class="send" type="submit" id="send-button" aria-label="Mesaj gönder">➤</button></div></form>
   <input id="photo-input" type="file" accept="image/*" class="hidden" aria-label="Fotoğraf seç">
   <div class="notice status hidden" id="chat-status" role="status"></div>
  </div>
 </section>
 <div id="global-status" class="notice status hidden" role="alert"></div>
-<p class="bottom">Günlük · v2.2.2</p>
+<p class="bottom">Günlük · v3.0</p>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0" crossorigin="anonymous"></script>
 <script>
@@ -458,7 +477,7 @@ async function refreshMessages(){
   const receiptById=new Map(receipts.map(r=>[r.id,r]));
   const present=new Set((data||[]).map(m=>m.id));
   const items=(data||[]).map(m=>({kind:'message',date:m.created_at,m}));
-  for(const r of receipts){if(r.opened_at&&!present.has(r.id)&&Date.now()-new Date(r.opened_at).getTime()<86400000)items.push({kind:'opened',date:r.created_at,r});}
+  for(const r of receipts){if(r.opened_at&&!present.has(r.id)&&Date.now()-new Date(r.opened_at).getTime()<30000)items.push({kind:'opened',date:r.created_at,r});}
   items.sort((a,b)=>new Date(a.date)-new Date(b.date));
   const root=$('#chat-list');const bottom=root.scrollHeight-root.scrollTop-root.clientHeight<100;
   root.replaceChildren();
@@ -466,7 +485,7 @@ async function refreshMessages(){
   for(const item of items){
    if(item.kind==='opened'){
     const b=document.createElement('div');b.className='bubble mine';b.style.opacity='.7';
-    b.textContent='✓✓ Açıldı';const clock=document.createElement('small');clock.className='time';clock.textContent=new Date(item.r.opened_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});b.append(clock);root.append(b);continue;
+    b.textContent='✓✓ Açıldı';const clock=document.createElement('small');clock.className='time';clock.textContent=new Date(item.r.opened_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});b.append(clock);root.append(b);setTimeout(()=>b.remove(),Math.max(0,30000-(Date.now()-new Date(item.r.opened_at).getTime())));continue;
    }
    const m=item.m,own=m.sender_id===accountId,isPhoto=m.payload?.kind==='photo';
    const b=document.createElement('button');b.type='button';b.className='bubble'+(own?' mine':'');b.dataset.mediaKind=isPhoto?'photo':'text';
@@ -511,7 +530,7 @@ async function readMessage(m,button,text){
    if(imageBytes.length>1000000||!/^[A-Za-z0-9+/=]+$/.test(imageBytes))throw Error('Fotoğraf verisi geçersiz.');
    const img=document.createElement('img');img.src='data:image/jpeg;base64,'+imageBytes;img.alt='Şifreli, tek kullanımlık fotoğraf';img.draggable=false;
    text.replaceChildren(img);
-  }else text.textContent=plain;
+  }else if(!renderG3Expression(plain,text))text.textContent=plain;
   const when=document.createElement('span');when.className='time view-countdown';let remaining=10;when.textContent='10';when.title='10 saniye';button.append(when);
   openTick=setInterval(()=>{remaining=Math.max(0,remaining-1);when.style.setProperty('--progress',(remaining*10)+'%');when.textContent=String(remaining);when.title=remaining+' saniye';if(!remaining&&openTick){clearInterval(openTick);openTick=null}},1000);
   openTimer=setTimeout(()=>{dismissOpened();refreshMessages()},10000);
@@ -735,7 +754,7 @@ const CHAT_THEMES=['night','rain','paper','minimal'];
 function activePinKey(){return 'gunluk-v20-pins:'+accountId;}
 function readChatTheme(id){try{const v=localStorage.getItem('gunluk-v20-theme:'+accountId+':'+id);return CHAT_THEMES.includes(v)?v:'night';}catch{return 'night';}}
 function setChatTheme(theme,save=true){if(!CHAT_THEMES.includes(theme))theme='night';$('#conversation').dataset.theme=theme;for(const b of document.querySelectorAll('[data-theme-choice]'))b.classList.toggle('selected',b.dataset.themeChoice===theme);if(save&&currentContact)try{localStorage.setItem('gunluk-v20-theme:'+accountId+':'+currentContact.id,theme)}catch{}}
-function resetV20Chat(){endPhotoPicker();document.body.classList.remove('chat-active');clearPendingPhoto();$('#starter-sheet').classList.add('hidden');$('#chat-theme-choices').classList.add('hidden');}
+function resetV20Chat(){endPhotoPicker();document.body.classList.remove('chat-active');clearPendingPhoto();$('#starter-sheet').classList.add('hidden');$('#starter-trigger').setAttribute('aria-expanded','false');$('#chat-theme-choices').classList.add('hidden');}
 async function initV20Workspace(){
  pinRotation=Number(crypto.getRandomValues(new Uint8Array(1))[0])%DEFAULT_PINS.length;
  customPins=[];
@@ -766,7 +785,7 @@ function renderBoard(){
  if(currentContact)renderChatPins();
 }
 function insertSnippet(text){
- if(currentContact&&unlocked){const input=$('#message-input');input.value=input.value.trim()?input.value.trim()+' '+text:text;input.focus();$('#starter-sheet').classList.add('hidden');}
+ if(currentContact&&unlocked){const input=$('#message-input');input.value=input.value.trim()?input.value.trim()+' '+text:text;input.focus();$('#starter-sheet').classList.add('hidden');$('#starter-trigger').setAttribute('aria-expanded','false');}
  else{pendingSnippet=text;const panel=$('#board-panel');panel.querySelector('.board-caption').textContent='Seçildi. Sohbeti açınca mesaj kutusuna aktarılacak.';}
 }
 function renderChatPins(){
@@ -781,8 +800,20 @@ $('#pin-form').onsubmit=async e=>{e.preventDefault();const text=$('#pin-text').v
 };
 $('#chat-theme-toggle').onclick=()=>{$('#chat-theme-choices').classList.toggle('hidden')};
 for(const btn of document.querySelectorAll('[data-theme-choice]'))btn.onclick=()=>{setChatTheme(btn.dataset.themeChoice);$('#chat-theme-choices').classList.add('hidden')};
-const starterRoot=$('#starter-sheet');for(const t of STARTER_PHRASES){const b=document.createElement('button');b.type='button';b.textContent=t;b.onclick=()=>insertSnippet(t);starterRoot.append(b)}
-$('#starter-trigger').onclick=()=>{starterRoot.classList.toggle('hidden')};
+
+const G3_NAMES=['Aklımdasın','Öpücük','Isırdım','Eritiyorsun','Gel buraya','Yaramaz','Sarıl bana','Gece seninle','Fısıltı','Yanıyorum','Çekim','Beni iste'];
+const G3_EFFECTS=[[9,'Ateş','Yanımda olsaydın uyumak zor olurdu.'],[1,'Dudak izi','Bu gece bütün öpücüklerim sana.'],[8,'Fısıltı','Kulağına söylemek istediğim şeyler var…'],[5,'Yaramaz','Bugün uslu düşüncelerim yok.'],[6,'Kalp atışı','Kalbim sana yakın.'],[0,'Aşk mektubu','Sana söylemek istediğim bir şey var.']];
+const G3_CARDS=['O bakışın bütün planlarımı bozuyor.','Seni düşünmeden geçirdiğim bir an var mı acaba?','Biraz daha yakın olmanı istiyorum.','Bu gece keşke yanımda olsan.','Gülüşüne karşı koyamıyorum.','Bir öpücük borcun var.','Sana sarılmak için sabırsızlanıyorum.','Bugün aklımın en güzel yerindesin.'];
+const G3_QUESTIONS=[['Beni en çok hangi anımızda özlüyorsun?','Birlikte kusursuz bir gece nasıl olurdu?','Bende seni en çok etkileyen şey ne?'],['Beni baştan çıkarmak için tek cümle hakkın olsa ne söylerdin?','Şu an yan yana olsaydık ilk ne yapardın?','Hangi bakışıma karşı koyamıyorsun?'],['Bana söylemeye çekindiğin bir arzun var mı?','Sana en çok hangi yakınlık heyecan veriyor?','Birlikte denemek istediğin romantik bir sürpriz var mı?']];
+const starterRoot=$('#starter-sheet');
+let g3Tab='emoji',g3Level=0,g3Question=0;
+function g3Art(id){const e=document.createElement('span');e.className='g3-art';e.setAttribute('aria-hidden','true');e.style.setProperty('--g3-x',(id%4)*100/3+'%');e.style.setProperty('--g3-y',Math.floor(id/4)*50+'%');return e;}
+function renderG3Expression(plain,root){const m=/^([\s\S]*)\n\[G3:(emoji|effect):(\d{1,2})\]$/.exec(plain);if(!m)return false;const id=Number(m[3]);if(!G3_NAMES[id])return false;const wrap=document.createElement('span');wrap.className='g3-open'+(m[2]==='effect'?' g3-effect':'');wrap.append(g3Art(id));const cap=document.createElement('span');cap.textContent=m[1];wrap.append(cap);root.replaceChildren(wrap);if(m[2]==='effect'&&id===6&&!activeOpenOwn&&navigator.vibrate&&!matchMedia('(prefers-reduced-motion: reduce)').matches){try{navigator.vibrate([45,70,45])}catch{}}return true;}
+async function g3Send(label,id,type){if(!unlocked||!currentContact||sendingV20)return;const rev=epoch;try{await sendV20Message(label+'\n[G3:'+type+':'+id+']','expression');if(epoch===rev){starterRoot.classList.add('hidden');$('#starter-trigger').setAttribute('aria-expanded','false');if(type==='effect'&&$('#message-input').value.trim()===label)$('#message-input').value='';}}catch(e){if(epoch===rev)info('#chat-status','Gönderilemedi: '+err(e),true)}}
+function g3Button(label,fn){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=fn;return b}
+function renderG3Drawer(){starterRoot.replaceChildren();const tabs=document.createElement('div');tabs.className='g3-tabs';for(const [id,label] of [['emoji','İfadeler'],['effect','Efektler'],['card','Kartlar'],['question','Sorular'],['starter','Başlatıcılar']]){const b=g3Button(label,()=>{g3Tab=id;renderG3Drawer()});b.setAttribute('aria-pressed',String(g3Tab===id));tabs.append(b)}starterRoot.append(tabs);const caption=document.createElement('p');caption.className='g3-caption';const body=document.createElement('div');body.className=g3Tab==='emoji'?'g3-grid':'g3-actions';if(g3Tab==='emoji'){caption.textContent='Günlük koleksiyonu · Dokun ve gönder';G3_NAMES.forEach((name,id)=>{const b=g3Button(name,()=>g3Send(name,id,'emoji'));b.prepend(g3Art(id));body.append(b)})}else if(g3Tab==='effect'){caption.textContent='Efektli mesaj · Yazdığın mesaj varsa onu kullanır';for(const [id,name,msg] of G3_EFFECTS){body.append(g3Button(name,()=>{const draft=$('#message-input').value.trim();g3Send(draft||msg,id,'effect')}))}}else if(g3Tab==='card'){caption.textContent='Bir kart seç, istersen düzenle ve gönder';for(const t of G3_CARDS)body.append(g3Button(t,()=>insertSnippet(t)))}else if(g3Tab==='question'){caption.textContent='Geceye bir soru · Her soruyu pas geçebilirsin';const levels=document.createElement('div');levels.className='g3-tabs';['Romantik','Flörtöz','Cesur'].forEach((t,i)=>{const b=g3Button(t,()=>{g3Level=i;g3Question=0;renderG3Drawer()});b.setAttribute('aria-pressed',String(i===g3Level));levels.append(b)});starterRoot.append(levels);const qs=G3_QUESTIONS[g3Level],q=qs[g3Question%qs.length];const p=document.createElement('p');p.textContent=q;p.style.gridColumn='1/-1';body.append(p,g3Button('Sonraki soru',()=>{g3Question++;renderG3Drawer()}),g3Button('Sohbete ekle',()=>insertSnippet(q)),g3Button('Tutku ruleti',()=>{g3Level=Math.floor(Math.random()*3);g3Question=Math.floor(Math.random()*3);renderG3Drawer()}))}else{caption.textContent='Sohbet başlatıcıları';for(const t of STARTER_PHRASES)body.append(g3Button(t,()=>insertSnippet(t)))}starterRoot.append(caption,body);}
+$('#starter-trigger').onclick=()=>{if(!unlocked||!currentContact)return;const show=starterRoot.classList.contains('hidden');if(show)renderG3Drawer();starterRoot.classList.toggle('hidden',!show);$('#starter-trigger').setAttribute('aria-expanded',String(show))};
+
 function clearPendingPhoto(){pendingPhoto=null;const img=$('#photo-preview-img');if(img)img.removeAttribute('src');visible('#photo-preview',false);const f=$('#photo-input');if(f)f.value='';}
 async function preparePhoto(file){
  if(!file||!file.type.startsWith('image/'))throw Error('Bir fotoğraf seç.');
@@ -813,7 +844,7 @@ $('#photo-input').addEventListener('cancel',endPhotoPicker);
 $('#photo-input').onchange=async()=>{const file=$('#photo-input').files?.[0];endPhotoPicker();if(!file)return;try{
  const value=await preparePhoto(file);if(!unlocked||!currentContact)return;
  pendingPhoto=value;$('#photo-preview-img').src='data:image/jpeg;base64,'+value.base64;
- visible('#photo-preview');$('#starter-sheet').classList.add('hidden');
+ visible('#photo-preview');$('#starter-sheet').classList.add('hidden');$('#starter-trigger').setAttribute('aria-expanded','false');
  }catch(e){clearPendingPhoto();info('#chat-status',err(e),true)}finally{$('#photo-input').value='';}};
 $('#photo-cancel').onclick=clearPendingPhoto;
 $('#photo-send').onclick=async()=>{if(!pendingPhoto)return;try{await sendV20Message(PHOTO_MARK+pendingPhoto.base64,'photo')}catch(e){info('#chat-status','Fotoğraf gönderilemedi: '+err(e),true)}};
